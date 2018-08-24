@@ -259,7 +259,9 @@ class Infra():
         if len(Proxy) > 1:
             import adodbapi.remote as AdoLib
             ConnParm['proxy_host'] = Proxy
-            ConnParm['proxy_port'] = ProxyPort
+            if len(ProxyPort) > 1:
+                ConnParm['proxy_port'] = ProxyPort
+            else:pass
         else:
             import adodbapi as AdoLib
         Ado = AdoLib.connect(ConnParm)
@@ -270,11 +272,15 @@ class Infra():
                 Ado.commit()
                 Ado.close()
                 return True
-            except:
+            except Exception as err:
+                print(err)
                 return False
         else:
             AdoCur.execute(SQL)
-            RawData = AdoCur.fetchall()
+            Columns = [column[0] for column in AdoCur.description]
+            RawData = []
+            for Row in AdoCur.fetchall():
+                RawData.append(dict(zip(Columns, Row)))
             Ado.close()
             return RawData
 
@@ -639,21 +645,17 @@ class ExlCom:
             sht = self.xlBook.Worksheets(sheet)
             sht.Rows(row).Insert(1)
 
-
 Host = '.\SQLEXPRESS'
 DB = 'HCHSPB'
 User = 'python'
 Passsowrd = '262122'
 Proxy =  ''
 PoxyPort = ''
-# SQL = 'SELECT TOP 1000 [TestABC] FROM [HCHSPB].[dbo].[TestTable]'
+SQL = "SELECT TOP %d [TestABC],[TGHHA] FROM [HCHSPB].[dbo].[TestTable] where TestABC='python' and TGHHA='python'" % 1000
+for d in Infra.AdoDBCon(object, 'r', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQL):
+    print(d)
 
-for x in range(100):
-    SQL = 'INSERT INTO [HCHSPB].[dbo].[TestTable] VALUES(%s)' % x
-    print(Infra.AdoDBCon(object, 'w', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQL))
+# for x in range(100):
+#     SQL = "INSERT INTO [HCHSPB].[dbo].[TestTable]([TestABC],[TGHHA]) VALUES('%s','%s')" % ('python %s'%x,'python%s'%x)
+#     print(Infra.AdoDBCon(object, 'w', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQL))
 
-# # Data = {'Date':{'Cell':'K3','Data':'2017/10/2'},'addr':{'Cell':'K6','Data':'City-0069'}}
-# ExlFile = 'E:\Resources\Documents\PD\grispsrv\external\EXL.xlsm'
-# # Exl.WriteDataToExcel(object,ExlFile,'T-MainLine-Ord',Data)
-# # ExlFileX = ExlCom(filename=ExlFile,isReadOnly=False,isVisible=False)
-# Exl.GetColDataByHeaderWithCOM(object,ExlFile,'T-Commbox','TargetDate',[1,1,5,50],True)
