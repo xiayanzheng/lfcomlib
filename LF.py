@@ -605,21 +605,21 @@ class ExlCom:
 
         def SetCell(self, sheet, row, col, value):  # 设置单元格的数据
             "set value of one cell"
-            sht = self.xlBook.Worksheets(sheet)
-            sht.Cells(row, col).Value = value
+            Sheet = self.xlBook.Worksheets(sheet)
+            Sheet.Cells(row, col).Value = value
 
         def SetCellFormat(self, sheet, row, col):  # 设置单元格的数据
             "set value of one cell"
-            sht = self.xlBook.Worksheets(sheet)
-            sht.Cells(row, col).Font.Size = 15  # 字体大小
-            sht.Cells(row, col).Font.Bold = True  # 是否黑体
-            sht.Cells(row, col).Name = "Arial"  # 字体类型
-            sht.Cells(row, col).Interior.ColorIndex = 3  # 表格背景
+            Sheet = self.xlBook.Worksheets(sheet)
+            Sheet.Cells(row, col).Font.Size = 15  # 字体大小
+            Sheet.Cells(row, col).Font.Bold = True  # 是否黑体
+            Sheet.Cells(row, col).Name = "Arial"  # 字体类型
+            Sheet.Cells(row, col).Interior.ColorIndex = 3  # 表格背景
             # sht.Range("A1").Borders.LineStyle = xlDouble
-            sht.Cells(row, col).BorderAround(1, 4)  # 表格边框
-            sht.Rows(3).RowHeight = 30  # 行高
-            sht.Cells(row, col).HorizontalAlignment = -4131  # 水平居中xlCenter
-            sht.Cells(row, col).VerticalAlignment = -4160  #
+            Sheet.Cells(row, col).BorderAround(1, 4)  # 表格边框
+            Sheet.Rows(3).RowHeight = 30  # 行高
+            Sheet.Cells(row, col).HorizontalAlignment = -4131  # 水平居中xlCenter
+            Sheet.Cells(row, col).VerticalAlignment = -4160  #
 
         def DeleteRow(self, sheet, row):
             sht = self.xlBook.Worksheets(sheet)
@@ -644,16 +644,16 @@ class ExlCom:
         def InserRow(self, sheet, row):
             sht = self.xlBook.Worksheets(sheet)
             sht.Rows(row).Insert(1)
-
-Host = '.\SQLEXPRESS'
-DB = 'HCHSPB'
-User = 'python'
-Passsowrd = '262122'
-Proxy =  ''
-PoxyPort = ''
-SQL = "SELECT TOP %d [TestABC],[TGHHA] FROM [HCHSPB].[dbo].[TestTable] where TestABC='python' and TGHHA='python'" % 1000
-for d in Infra.AdoDBCon(object, 'r', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQL):
-    print(d)
+#
+# Host = '.\SQLEXPRESS'
+# DB = 'HCHSPB'
+# User = 'python'
+# Passsowrd = '262122'
+# Proxy =  ''
+# PoxyPort = ''
+# SQL = "SELECT TOP %d [No],[Name],[Value],[Remarks_A],[Remarks_B] FROM [HCHSPB].[dbo].[InitialSetting]" % 1000
+# for d in Infra.AdoDBCon(object, 'r', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQL):
+#     print(d)
 
 # for x in range(100):
 #     SQL = "INSERT INTO [HCHSPB].[dbo].[TestTable]([TestABC],[TGHHA]) VALUES('%s','%s')" % ('python %s'%x,'python%s'%x)
