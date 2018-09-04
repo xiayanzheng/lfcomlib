@@ -248,7 +248,7 @@ class Infra():
             Dict[Key] = dict(Dict[Key])
         return Dict
 
-    def AdoDBCon(self, Mode, Host, DB, User, Passsowrd, Proxy, ProxyPort, SQL):
+    def AdoDBCon(self, Mode, Host, DB, User, Passsowrd, Proxy, ProxyPort, SQL,Outputtype):
         ConnParm = {'host': r"%s"%Host,
                      'database': DB,
                      'user': User,
@@ -276,13 +276,23 @@ class Infra():
                 print(err)
                 return False
         else:
-            AdoCur.execute(SQL)
-            Columns = [column[0] for column in AdoCur.description]
-            RawData = []
-            for Row in AdoCur.fetchall():
-                RawData.append(dict(zip(Columns, Row)))
-            Ado.close()
-            return RawData
+            if Outputtype == 'Dict':
+                AdoCur.execute(SQL)
+                Columns = [column[0] for column in AdoCur.description]
+                RawData = []
+                for Row in AdoCur.fetchall():
+                    RawData.append(dict(zip(Columns, Row)))
+                Ado.close()
+                return RawData
+            else:
+                AdoCur.execute(SQL)
+                RawData = []
+                for Row in AdoCur.fetchall():
+                    for Rowdata in Row:
+                        RawData.append(Rowdata)
+                Ado.close()
+                return RawData
+
 
 class SaveData():
 
@@ -644,16 +654,15 @@ class ExlCom:
         def InserRow(self, sheet, row):
             sht = self.xlBook.Worksheets(sheet)
             sht.Rows(row).Insert(1)
-#
+
 # Host = '.\SQLEXPRESS'
-# DB = 'HCHSPB'
+# DB = 'TMS_ATL'
 # User = 'python'
 # Passsowrd = '262122'
 # Proxy =  ''
 # PoxyPort = ''
-# SQL = "SELECT TOP %d [No],[Name],[Value],[Remarks_A],[Remarks_B] FROM [HCHSPB].[dbo].[InitialSetting]" % 1000
-# for d in Infra.AdoDBCon(object, 'r', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQL):
-#     print(d)
+# SQL = 'SELECT [City],[Area] FROM [TMS_ATL].[dbo].[M-Delivery]'
+# print(Infra.AdoDBCon(object, 'r', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQL,'List'))
 
 # for x in range(100):
 #     SQL = "INSERT INTO [HCHSPB].[dbo].[TestTable]([TestABC],[TGHHA]) VALUES('%s','%s')" % ('python %s'%x,'python%s'%x)
