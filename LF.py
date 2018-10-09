@@ -293,7 +293,6 @@ class Infra():
                 Ado.close()
                 return RawData
 
-
 class SaveData():
 
     def toCSV(self, FilePath, FileName, Headers, Data):
@@ -386,6 +385,45 @@ class Numbers():
         return NumberRangeResult
 
 class DaPr():
+
+    def SQLMakerForMSSQL(self,OprType,Config):
+        '''
+        Config Template
+           Config = {
+           'Database':'TMS_ATL',
+           'DBO':'dbo',
+           'TableName':'M-Delivery',
+           'WhereArgs':'[Name] IS NOT NULL',
+           'NumberOfRow':1000,
+           'Cols':[1,2,3],
+           'Values':[1,2,3],
+           }
+        '''
+        Unziped = {
+            'Temp':[],
+            'Cols':None,
+            'Values':None,
+            'WhereIsNotNull':None,
+        }
+        GUA = ['Cols','WhereIsNotNull']#The gourp is using '[]'
+        GUB = ['Values']#The gourp is using ''''
+        for DataSet in GUA + GUB:
+            if len(Config[DataSet]) > 0:
+                for Element in Config[DataSet]:
+                    if DataSet in GUA:
+                        Unziped['Temp'].append("[%s]"%Element)
+                    elif DataSet in GUB:
+                        Unziped['Temp'].append("'%s'" % Element)
+                Unziped[DataSet] = reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(self, Unziped['Temp'], ","))
+                Unziped['Temp'].clear()
+            else:pass
+        SQLTemplats = {
+            'SelectRaw': "SELECT %s FROM [%s].[%s].[%s] " % (Config['SelectType'], Config['Database'], Config['DBO'], Config['TableName']),
+            'Select': "SELECT %s FROM [%s].[%s].[%s] WHERE %s IS NOT NULL " % (Config['SelectType'],Config['Database'], Config['DBO'], Config['TableName'], Unziped['WhereIsNotNull']),
+            'Insert':"INSERT INTO [%s].[%s].[%s](%s) VALUES(%s)" % (Config['Database'],Config['DBO'],Config['TableName'],Unziped['Cols'],Unziped['Values']),
+            'Update':"UPDATE [%s].[%s].[%s] SET Address = 'Zhongshan 23', City = 'Nanjing' WHERE LastName = 'Wilson'"%(Config['Database'], Config['DBO'], Config['TableName'],)
+        }
+        return SQLTemplats[OprType]
 
     def KeepOne(self,rawdata):
         KeepOne = []
@@ -661,8 +699,19 @@ class ExlCom:
 # Passsowrd = '262122'
 # Proxy =  ''
 # PoxyPort = ''
-# SQL = 'SELECT [City],[Area] FROM [TMS_ATL].[dbo].[M-Delivery]'
-# print(Infra.AdoDBCon(object, 'r', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQL,'List'))
+#
+# Config = {
+#     'Database':'TMS_ATL',
+#     'DBO':'dbo',
+#     'TableName':'InitialSetting',
+#     'WhereArgs':'[Name] IS NOT NULL',
+#     'NumberOfRow':1000,
+#     'Cols':[1,2,3],
+#     'Values':[1,2,3],
+# }
+# print(Infra.AdoDBCon(object, 'r', Host, DB, User, Passsowrd, Proxy, PoxyPort, DaPr.SQLMakerForMSSQL(object,'SelectAll',Config),'List'))
+
+
 
 # for x in range(100):
 #     SQL = "INSERT INTO [HCHSPB].[dbo].[TestTable]([TestABC],[TGHHA]) VALUES('%s','%s')" % ('python %s'%x,'python%s'%x)
