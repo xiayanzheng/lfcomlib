@@ -384,9 +384,7 @@ class Numbers():
             NumberRangeResult.append([StartNumber,EndNumber])
         return NumberRangeResult
 
-class DaPr():
-
-    def SQLMakerForMSSQL(self,OprType,Config):
+class SQLMakerForMSSQL:
         '''
         Config Template
            Config = {
@@ -399,31 +397,57 @@ class DaPr():
            'Values':[1,2,3],
            }
         '''
-        Unziped = {
-            'Temp':[],
-            'Cols':None,
-            'Values':None,
-            'WhereIsNotNull':None,
-        }
-        GUA = ['Cols','WhereIsNotNull']#The gourp is using '[]'
-        GUB = ['Values']#The gourp is using ''''
-        for DataSet in GUA + GUB:
-            if len(Config[DataSet]) > 0:
-                for Element in Config[DataSet]:
-                    if DataSet in GUA:
-                        Unziped['Temp'].append("[%s]"%Element)
-                    elif DataSet in GUB:
-                        Unziped['Temp'].append("'%s'" % Element)
-                Unziped[DataSet] = reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(self, Unziped['Temp'], ","))
-                Unziped['Temp'].clear()
-            else:pass
-        SQLTemplats = {
-            'SelectRaw': "SELECT %s FROM [%s].[%s].[%s] " % (Config['SelectType'], Config['Database'], Config['DBO'], Config['TableName']),
-            'Select': "SELECT %s FROM [%s].[%s].[%s] WHERE %s IS NOT NULL " % (Config['SelectType'],Config['Database'], Config['DBO'], Config['TableName'], Unziped['WhereIsNotNull']),
-            'Insert':"INSERT INTO [%s].[%s].[%s](%s) VALUES(%s)" % (Config['Database'],Config['DBO'],Config['TableName'],Unziped['Cols'],Unziped['Values']),
-            'Update':"UPDATE [%s].[%s].[%s] SET Address = 'Zhongshan 23', City = 'Nanjing' WHERE LastName = 'Wilson'"%(Config['Database'], Config['DBO'], Config['TableName'],)
-        }
-        return SQLTemplats[OprType]
+        # def AddProc(self,Dataset):
+        #
+
+        def Make(self,OprType,Config):
+            Unziped = {
+                'Temp':[],
+                'Cols':None,
+                'Values':None,
+                'WhereIsNotNull':None,
+                'PrimeryKey':None,
+                'WhereValues':None,
+            }
+            Primery = ['WhereValues']
+            GUA = ['Cols','WhereIsNotNull','PrimeryKey']#The gourp is using '[]'
+            GUB = []#The gourp is using ''''
+            GUC = ['Values']
+            for DataSet in Primery + GUA + GUB + GUC:
+                if len(Config[DataSet]) > 0:
+                    for Element in Config[DataSet]:
+                        if DataSet in GUA:
+                            Unziped['Temp'].append("[%s]"%Element)
+                        elif DataSet in GUB:
+                            Unziped['Temp'].append("'%s'" % Element)
+                        elif DataSet in GUC and Primery:
+                            Unziped['Temp'].append(" %s = '%s' " % (Element))
+                    Unziped[DataSet] = reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(self, Unziped['Temp'], ","))
+                    Unziped['Temp'].clear()
+                else:pass
+            SQLTemplats = {
+                'SelectRaw': "SELECT %s FROM [%s].[%s].[%s] " % (Config['SelectType'], Config['Database'], Config['DBO'], Config['TableName']),
+                'Select': "SELECT %s %s FROM [%s].[%s].[%s] WHERE %s IS NOT NULL " % (Config['SelectType'],Unziped['Cols'],Config['Database'], Config['DBO'], Config['TableName'], Unziped['WhereIsNotNull']),
+                'Insert':"INSERT INTO [%s].[%s].[%s](%s) VALUES(%s)" % (Config['Database'],Config['DBO'],Config['TableName'],Unziped['Cols'],Unziped['Values']),
+                'Update':"UPDATE [%s].[%s].[%s] SET %s WHERE %s"%(Config['Database'], Config['DBO'], Config['TableName'],Unziped['Values'],Unziped['WhereValues'])
+            }
+            return SQLTemplats[OprType]
+
+class DaPr():
+
+    def FindDiffValueFromTwoDicts(self, type, Origi, Modified):
+        if type in ['dict','Dict']:
+            Diff = {}
+            for Key, Value in Origi.items():
+                try:
+                    if Modified[Key] == Value:pass
+                    else:
+                        Diff[Key] = Value
+                except:
+                    pass
+            return Diff
+
+
 
     def KeepOne(self,rawdata):
         KeepOne = []
@@ -693,27 +717,25 @@ class ExlCom:
             sht = self.xlBook.Worksheets(sheet)
             sht.Rows(row).Insert(1)
 
-# Host = '.\SQLEXPRESS'
-# DB = 'TMS_ATL'
-# User = 'python'
-# Passsowrd = '262122'
-# Proxy =  ''
-# PoxyPort = ''
-#
-# Config = {
-#     'Database':'TMS_ATL',
-#     'DBO':'dbo',
-#     'TableName':'InitialSetting',
-#     'WhereArgs':'[Name] IS NOT NULL',
-#     'NumberOfRow':1000,
-#     'Cols':[1,2,3],
-#     'Values':[1,2,3],
-# }
-# print(Infra.AdoDBCon(object, 'r', Host, DB, User, Passsowrd, Proxy, PoxyPort, DaPr.SQLMakerForMSSQL(object,'SelectAll',Config),'List'))
 
+Host = '.\SQLEXPRESS'
+DB = 'TMS_ATL'
+User = 'python'
+Passsowrd = '262122'
+Proxy =  ''
+PoxyPort = ''
 
+Config = {
+    'SelectType': '*',
+    'Database': 'TMS_ATL',
+    'DBO': 'dbo',
+    'TableName': 'InitialSetting',
+    'WhereIsNotNull': '',
+    'PrimeryKey': {},
+    'Cols': ['No', 'Name', 'Value', 'Remarks_1', 'Remarks_2'],
+    'Values': { 'No': 1, 'Remarks_1': 'km/h', 'Remarks_2': '高速道路平均速度（含休息时间）', 'Value': 999},
+    'WhereValues':{'Name': 'HighwaySpeed'},
+}
+print(Infra.AdoDBCon(object, 'r', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQLMakerForMSSQL.Make(object,'Update',Config),'List'))
 
-# for x in range(100):
-#     SQL = "INSERT INTO [HCHSPB].[dbo].[TestTable]([TestABC],[TGHHA]) VALUES('%s','%s')" % ('python %s'%x,'python%s'%x)
-#     print(Infra.AdoDBCon(object, 'w', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQL))
 
