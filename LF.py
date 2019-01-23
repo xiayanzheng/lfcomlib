@@ -139,6 +139,15 @@ class Infra():
             # 返回 Main.Flow(sel返回到方法
             return False
 
+    def MariaDBExpress(self,SQL,Data, NumberOfRow,):
+        try:
+            from serverConfig.init import globalsetting
+            return Infra.MariaDB(SQL,globalsetting.mariaHost,globalsetting.mariaPort,
+                          globalsetting.mariaUser,globalsetting.mariaPassword,
+                          globalsetting.mariaDatabase,globalsetting.mariaCharSet,Data, NumberOfRow,)
+        except:
+            return False
+
     def MariaDB(SQL, Host, Port, User, Password, Database, CharSet, Data, NumberOfRow, ):
         try:
             # 连接MySQL数据库
@@ -152,20 +161,20 @@ class Infra():
                 DataBaseCursor.execute(SQL)
                 if NumberOfRow == 1:
                     RawData = DataBaseCursor.fetchone()
-                    ConnectDataBase.Close()
+                    ConnectDataBase.close()
                     return RawData
                 if NumberOfRow > 0:
                     RawData = DataBaseCursor.fetchmany(NumberOfRow)
-                    ConnectDataBase.Close()
+                    ConnectDataBase.close()
                     return RawData
                 else:
                     RawData = DataBaseCursor.fetchall()
-                    ConnectDataBase.Close()
+                    ConnectDataBase.close()
                     return RawData
             else:
                 DataBaseCursor.execute(SQL)
                 ConnectDataBase.commit()
-                ConnectDataBase.Close()
+                ConnectDataBase.close()
                 return True
         except:
             return False
@@ -240,7 +249,7 @@ class Infra():
         Value = ReadConfig.get(Section, Key)
         return Value
 
-    def ReadiniAsDict(ConfigFile):
+    def read_ini_as_dict(ConfigFile):
         ReadConfig = configparser.ConfigParser()
         ReadConfig.read_file(codecs.open(ConfigFile, "r", "utf-8-sig"))
         Dict = dict(ReadConfig._sections)
@@ -248,7 +257,7 @@ class Infra():
             Dict[Key] = dict(Dict[Key])
         return Dict
 
-    def AdoDBCon(self, Mode, Host, DB, User, Passsowrd, Proxy, ProxyPort, SQL,Outputtype):
+    def ado_db_con(self, Mode, Host, DB, User, Passsowrd, Proxy, ProxyPort, SQL, Outputtype):
         ConnParm = {'host': r"%s"%Host,
                      'database': DB,
                      'user': User,
@@ -292,6 +301,21 @@ class Infra():
                         RawData.append(Rowdata)
                 Ado.close()
                 return RawData
+
+    def read_json(self, filepath, filename):
+        import json
+        file = os.path.join(filepath,filename)
+        # Reading data from file
+        with open(file, 'r') as f:
+            dict = json.load(f)
+            return dict
+
+    def write_json(self, filepath, filename):
+        import json
+        file = os.path.join(filepath, filename)
+        # Writing JSON data
+        with open(file, 'w') as f:
+            json.dump(file, f)
 
 class SaveData():
 
@@ -446,8 +470,6 @@ class DaPr():
                 except:
                     pass
             return Diff
-
-
 
     def KeepOne(self,rawdata):
         KeepOne = []
@@ -716,26 +738,4 @@ class ExlCom:
         def InserRow(self, sheet, row):
             sht = self.xlBook.Worksheets(sheet)
             sht.Rows(row).Insert(1)
-
-
-Host = '.\SQLEXPRESS'
-DB = 'TMS_ATL'
-User = 'python'
-Passsowrd = '262122'
-Proxy =  ''
-PoxyPort = ''
-
-Config = {
-    'SelectType': '*',
-    'Database': 'TMS_ATL',
-    'DBO': 'dbo',
-    'TableName': 'InitialSetting',
-    'WhereIsNotNull': '',
-    'PrimeryKey': {},
-    'Cols': ['No', 'Name', 'Value', 'Remarks_1', 'Remarks_2'],
-    'Values': { 'No': 1, 'Remarks_1': 'km/h', 'Remarks_2': '高速道路平均速度（含休息时间）', 'Value': 999},
-    'WhereValues':{'Name': 'HighwaySpeed'},
-}
-print(Infra.AdoDBCon(object, 'r', Host, DB, User, Passsowrd, Proxy, PoxyPort, SQLMakerForMSSQL.Make(object,'Update',Config),'List'))
-
 
