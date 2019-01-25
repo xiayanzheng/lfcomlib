@@ -145,7 +145,8 @@ class Infra():
             return Infra.MariaDB(SQL,globalsetting.mariaHost,globalsetting.mariaPort,
                           globalsetting.mariaUser,globalsetting.mariaPassword,
                           globalsetting.mariaDatabase,globalsetting.mariaCharSet,Data, NumberOfRow,)
-        except:
+        except Exception as e:
+            print(e)
             return False
 
     def MariaDB(SQL, Host, Port, User, Password, Database, CharSet, Data, NumberOfRow, ):
@@ -176,7 +177,8 @@ class Infra():
                 ConnectDataBase.commit()
                 ConnectDataBase.close()
                 return True
-        except:
+        except Exception as e:
+            print(e)
             return False
 
     def SQLite3(SQL, Data, OutputType, NumberOfRow, Database):
