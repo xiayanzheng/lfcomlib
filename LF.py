@@ -232,7 +232,7 @@ class Infra():
             ConnectDataBase.commit()
 
     def ExcuteBat(self, BatFilePath,BatFile):
-        BatFilePath = ("%s\\%s" % (BatFilePath, BatFile))
+        BatFilePath = os.path.join(BatFilePath, BatFile)
         ExcuetBat = subprocess.Popen("cmd.exe /c" + "%s abc" % BatFilePath, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
         Curline = ExcuetBat.stdout.readline()
         while (Curline != b''):
@@ -322,7 +322,7 @@ class Infra():
 class SaveData():
 
     def toCSV(self, FilePath, FileName, Headers, Data):
-        LogPath = ("%s%s" % (FilePath, FileName))
+        LogPath = os.path.join(FilePath, FileName)
         print(Msg.StartWriteData)
         with open(LogPath, 'w',newline='') as CSV:
             # 定义Writer对象(由CSV.DictWriter(以字典模式写入)模块组成并定义列名称)
@@ -348,7 +348,7 @@ class SaveData():
 
     def toTXT(self, FilePath, FileName, Data):
         # 定义文件路径
-        LogPath = ("%s\%s" % (FilePath, FileName))
+        LogPath = os.path.join(FilePath, FileName)
         # 打开文件
         with open(LogPath, 'w', encoding='utf-8') as Log:
             # 写入数据
@@ -356,7 +356,7 @@ class SaveData():
             # 输出"写入数据成功数据"
             print(Msg.WriteDataSuccess)
             # 打开数据存储文件夹
-            os.system("explorer.exe %s\Logs" % FilePath)
+            os.system("explorer.exe %s" % os.path.join(FilePath,'Logs'))
         return LogPath
 
     def toXls(self, File, Row, Col, Str, Style=Style.default_style):
@@ -374,7 +374,7 @@ class SaveData():
         sheet = new_book.get_sheet(0)  # 获取第一个表格的数据
         for RowCol in RowColSet:
             sheet.write(RowCol[0], RowCol[1], Data)  # 修改0行1列的数据为'Haha'
-        TempFile = FilePath + '\Temp.xls'
+        TempFile = os.path.join(FilePath,'Temp.xls')
         new_book.Save(TempFile)  # 保存新的excel
         try:
             os.remove(Filename)  # 删除旧的excel
