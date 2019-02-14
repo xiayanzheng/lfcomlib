@@ -491,7 +491,7 @@ class DaPr():
         for Files in os.walk(Dir):
             for FileName in Files[2]:
                 if FileName.split(".")[-1] in FileExtensionList:
-                    FilePath = Files[0] + '\\' + FileName
+                    FilePath = os.path.join(Files[0],FileName)
                     FileList.append((FileName, os.path.getctime(FilePath),FilePath))
         if len(FileList) > 1:
             return sorted(FileList, key=lambda FileCreateTime: FileCreateTime[1])[-1][2]
