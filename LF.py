@@ -501,6 +501,9 @@ class DaPr():
     def ReplaceDirSlash(self,Dir):
         return reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(self, Dir.split("/"), "\\"))
 
+    def ReplaceDirSymbol(self, Dir,ReplaceFrom,ReplaceTo):
+        return reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(self, Dir.split(ReplaceFrom), ReplaceTo))
+
     def RenameDictKeys(self,RawData,ReplaceKeyMap):
         for Key in RawData:
             for RDKey, RDVaule in ReplaceKeyMap.items():
