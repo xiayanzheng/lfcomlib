@@ -593,6 +593,9 @@ class DaPr():
             else:pass
         return Package
 
+    def TimestampToDateTime(self,timestamp):
+        return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(timestamp)))
+
 class Exl():
 
     def GetColDataByHeader(self, excel, sheetName, head):
