@@ -1,4 +1,4 @@
-import requests,os,time,csv,sqlite3,subprocess,configparser,pymysql,xlrd,codecs
+import requests,os,time,csv,sqlite3,subprocess,configparser,pymysql,xlrd,codecs,datetime
 import urllib.parse as parse
 from xlutils.copy import copy
 from functools import reduce
@@ -597,7 +597,43 @@ class DaPr():
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(timestamp)))
 
     def DatetimeToTimestamp(self,datetime):
-        return int(time.mktime(time.strptime(datetime, "%Y-%m-%d %H:%M:%S")))
+        return int(datetime.timestamp())
+
+    def DatetimeNow(self):
+        return datetime.datetime.now()
+
+    def TimestampToDateTimeAsDict(self,timestamp):
+        lt = time.localtime(timestamp)
+        dtset = {
+            'year':time.strftime('%Y', lt),
+            'month':time.strftime('%m', lt),
+            'day':time.strftime('%d', lt),
+            'hour': time.strftime('%H', lt),
+            'minite': time.strftime('%M', lt),
+            'second': time.strftime('%S', lt),
+        }
+        return dtset
+
+    def TimestampCurrTime(self):
+        return int(time.time())
+
+    def TimeDiff(self,datetimeA,datetimeB):
+        timediff = datetimeA - datetimeB
+        timediffR1 = str(timediff).split(', ')
+        if  len(timediffR1) > 1:
+            timediffR1 = timediffR1[1]
+        print(timediffR1)
+        timediffR2 = timediffR1[0].split(':')
+        timediffDay = str(timediff.days).split(' day')
+        timediffDay = int(float(timediffDay[0]))
+        day2hour = timediffDay*24
+        dtset = {
+            'day': timediffDay,
+            'hour': int(float(timediffR2[0])) + day2hour,
+            'minute': int(float(timediffR2[1])),
+            'second': int(float(timediffR2[2])),
+        }
+        return dtset
 
 class Exl():
 
