@@ -622,11 +622,13 @@ class DaPr():
         timediffR1 = str(timediff).split(', ')
         if  len(timediffR1) > 1:
             timediffR1 = timediffR1[1]
-        print(timediffR1)
-        timediffR2 = timediffR1[0].split(':')
+            timediffR2 = timediffR1.split(':')
+        else:
+            timediffR2 = timediffR1[0].split(':')
         timediffDay = str(timediff.days).split(' day')
         timediffDay = int(float(timediffDay[0]))
         day2hour = timediffDay*24
+
         dtset = {
             'day': timediffDay,
             'hour': int(float(timediffR2[0])) + day2hour,
