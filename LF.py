@@ -312,12 +312,12 @@ class Infra():
             dict = json.load(f)
             return dict
 
-    def write_json(self, filepath, filename):
+    def write_json(self, filepath, filename, data):
         import json
         file = os.path.join(filepath, filename)
         # Writing JSON data
         with open(file, 'w') as f:
-            json.dump(file, f)
+            json.dump(data, f)
 
 class SaveData():
 
