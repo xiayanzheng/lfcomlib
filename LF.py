@@ -1,4 +1,6 @@
-import requests,os,time,csv,sqlite3,subprocess,configparser,pymysql,xlrd,codecs,datetime
+import requests, os, time, csv, sqlite3, subprocess, configparser, pymysql, xlrd, codecs, datetime
+import random
+import copy
 import urllib.parse as parse
 from xlutils.copy import copy
 from functools import reduce
@@ -6,15 +8,17 @@ from xlwt import Style
 import win32com.client
 import pythoncom
 
-class ErrMsg():
 
+class ErrMsg:
     UnsupportStr = "不支持输入字符"
     UnableAccessThisFile = "另一个程序正在使用此文件，进程无法访问。"
-    def __init__(self,UnsupportStr,UnableAccessThisFile):
+
+    def __init__(self, UnsupportStr, UnableAccessThisFile):
         self.UnsupportStr = UnsupportStr
         self.UnableAccessThisFile = UnableAccessThisFile
 
-class Msg():
+
+class Msg:
     StartGetToken = "开始获取Token"
     GetTokenSuccess = "获取Token成功"
     StartGetData = "开始获取数据"
@@ -62,17 +66,18 @@ class Msg():
         self.FailedGetAccentToken = FailedGetAccentToken
         self.UnknowSelection = UnknowSelection
 
-class Infra():
 
-    def OpenDir(self,Dir):
-        os.system("explorer %s" % DaPr.ReplaceDirSlash(self,Dir))
+class Infra:
 
-    def OpenFile(self, Program,Dir,Param):
+    def OpenDir(self, Dir):
+        os.system("explorer %s" % DaPr.ReplaceDirSlash(self, Dir))
+
+    def OpenFile(self, Program, Dir, Param):
         if Param == None:
             ParamX = ' '
         else:
             ParamX = Param
-        os.system("%s %s %s" % (Program,DaPr.ReplaceDirSlash(self, Dir),ParamX))
+        os.system("%s %s %s" % (Program, DaPr.ReplaceDirSlash(self, Dir), ParamX))
 
     def PostWR(self, DataSource, Parameter):
         Counter = 0
@@ -139,12 +144,12 @@ class Infra():
             # 返回 Main.Flow(sel返回到方法
             return False
 
-    def MariaDBExpress(self,SQL,Data, NumberOfRow,):
+    def MariaDBExpress(self, SQL, Data, NumberOfRow, ):
         try:
             from serverConfig.init import globalsetting
-            return Infra.MariaDB(SQL,globalsetting.mariaHost,globalsetting.mariaPort,
-                          globalsetting.mariaUser,globalsetting.mariaPassword,
-                          globalsetting.mariaDatabase,globalsetting.mariaCharSet,Data, NumberOfRow,)
+            return Infra.MariaDB(SQL, globalsetting.mariaHost, globalsetting.mariaPort,
+                                 globalsetting.mariaUser, globalsetting.mariaPassword,
+                                 globalsetting.mariaDatabase, globalsetting.mariaCharSet, Data, NumberOfRow, )
         except Exception as e:
             print(e)
             return False
@@ -153,7 +158,7 @@ class Infra():
         try:
             # 连接MySQL数据库
             ConnectDataBase = pymysql.connect(host=Host, port=Port, user=User, password=Password, db=Database,
-                                              charset=CharSet,cursorclass=pymysql.cursors.DictCursor)
+                                              charset=CharSet, cursorclass=pymysql.cursors.DictCursor)
             # 通过cursor创建游标
             DataBaseCursor = ConnectDataBase.cursor()
             # 执行数据查询
@@ -201,7 +206,7 @@ class Infra():
                 else:
                     RawData = SQLS.fetchall()
                 if OutputType == "List":
-                    return DaPr.MergeMultiTupleList(object,RawData)
+                    return DaPr.MergeMultiTupleList(object, RawData)
                 else:
                     return RawData
             else:
@@ -231,9 +236,10 @@ class Infra():
             CursorDataBase.execute(SQL, Data)
             ConnectDataBase.commit()
 
-    def ExcuteBat(self, BatFilePath,BatFile):
+    def ExcuteBat(self, BatFilePath, BatFile):
         BatFilePath = os.path.join(BatFilePath, BatFile)
-        ExcuetBat = subprocess.Popen("cmd.exe /c" + "%s abc" % BatFilePath, stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+        ExcuetBat = subprocess.Popen("cmd.exe /c" + "%s abc" % BatFilePath, stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT)
         Curline = ExcuetBat.stdout.readline()
         while (Curline != b''):
             # print(Curline.decode('GBK'))
@@ -242,7 +248,7 @@ class Infra():
         # print(ExcuteBat.returncode)
         ExcuetBat.terminate()
 
-    def Readini(ConfigFile,Section,Key):
+    def Readini(ConfigFile, Section, Key):
         ReadConfig = configparser.ConfigParser()
         ReadConfig.read_file(codecs.open(ConfigFile, "r", "utf-8-sig"))
         # ReadConfig.sections()
@@ -260,10 +266,10 @@ class Infra():
         return Dict
 
     def ado_db_con(self, Mode, Host, DB, User, Passsowrd, Proxy, ProxyPort, SQL, Outputtype):
-        ConnParm = {'host': r"%s"%Host,
-                     'database': DB,
-                     'user': User,
-                     'password': Passsowrd}
+        ConnParm = {'host': r"%s" % Host,
+                    'database': DB,
+                    'user': User,
+                    'password': Passsowrd}
         ConnParm['connection_string'] = """Provider=SQLOLEDB.1;
         User ID=%(user)s; Password=%(password)s;
         Initial Catalog=%(database)s; Data Source= %(host)s"""
@@ -272,7 +278,8 @@ class Infra():
             ConnParm['proxy_host'] = Proxy
             if len(ProxyPort) > 1:
                 ConnParm['proxy_port'] = ProxyPort
-            else:pass
+            else:
+                pass
         else:
             import adodbapi as AdoLib
         Ado = AdoLib.connect(ConnParm)
@@ -306,7 +313,7 @@ class Infra():
 
     def read_json(self, filepath, filename):
         import json
-        file = os.path.join(filepath,filename)
+        file = os.path.join(filepath, filename)
         # Reading data from file
         with open(file, 'r') as f:
             dict = json.load(f)
@@ -319,12 +326,13 @@ class Infra():
         with open(file, 'w') as f:
             json.dump(data, f)
 
-class SaveData():
+
+class SaveData:
 
     def toCSV(self, FilePath, FileName, Headers, Data):
         LogPath = os.path.join(FilePath, FileName)
         print(Msg.StartWriteData)
-        with open(LogPath, 'w',newline='') as CSV:
+        with open(LogPath, 'w', newline='') as CSV:
             # 定义Writer对象(由CSV.DictWriter(以字典模式写入)模块组成并定义列名称)
             Writer = csv.DictWriter(CSV, fieldnames=Headers)
             # 写入列名称(字典的键)
@@ -336,7 +344,7 @@ class SaveData():
         print(Msg.WriteDataSuccess)
         CSV.close()
 
-    def toCSVSR(self,CSV,Headers, Data):
+    def toCSVSR(self, CSV, Headers, Data):
         # 定义Writer对象(由CSV.DictWriter(以字典模式写入)模块组成并定义列名称)
         Writer = csv.DictWriter(CSV, fieldnames=Headers)
         # 写入列名称(字典的键)
@@ -356,7 +364,7 @@ class SaveData():
             # 输出"写入数据成功数据"
             print(Msg.WriteDataSuccess)
             # 打开数据存储文件夹
-            os.system("explorer.exe %s" % os.path.join(FilePath,'Logs'))
+            os.system("explorer.exe %s" % os.path.join(FilePath, 'Logs'))
         return LogPath
 
     def toXls(self, File, Row, Col, Str, Style=Style.default_style):
@@ -368,27 +376,31 @@ class SaveData():
         ws.write(Row, Col, Str, Style)
         wb.Save(File)
 
-    def ModifyExcel(self,FilePath,Filename,RowColSet,Data):
+    def ModifyExcel(self, FilePath, Filename, RowColSet, Data):
         book = xlrd.open_workbook(Filename)  # 打开excel
         new_book = copy(book)  # 复制excel
         sheet = new_book.get_sheet(0)  # 获取第一个表格的数据
         for RowCol in RowColSet:
             sheet.write(RowCol[0], RowCol[1], Data)  # 修改0行1列的数据为'Haha'
-        TempFile = os.path.join(FilePath,'Temp.xls')
+        TempFile = os.path.join(FilePath, 'Temp.xls')
         new_book.Save(TempFile)  # 保存新的excel
         try:
             os.remove(Filename)  # 删除旧的excel
             os.rename(TempFile, Filename)  # 将新excel重命名
-        except:print(ErrMsg.UnableAccessThisFile)
+        except:
+            print(ErrMsg.UnableAccessThisFile)
 
-class FormatCurrentTime():
+
+class FormatCurrentTime:
     YYYYMMDDHHMMSS = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
     YYYYMMDD = time.strftime("%Y%m%d", time.localtime())
-    def __init__(self,YYYYMMDDHHMMSS,YYYYMMDD):
+
+    def __init__(self, YYYYMMDDHHMMSS, YYYYMMDD):
         self.YYYYMMDDHHMMSS = YYYYMMDDHHMMSS
         self.YYYYMMDD = YYYYMMDD
 
-class Numbers():
+
+class Numbers:
 
     def GenRange(self, StartNumber, EndNumber, GapNumber):
         NumberRangeResult = []
@@ -407,73 +419,83 @@ class Numbers():
             NumberRangeResult.append(Temp)
             RowNumberSP += int(Gap % GapNumber)
         else:
-            NumberRangeResult.append([StartNumber,EndNumber])
+            NumberRangeResult.append([StartNumber, EndNumber])
         return NumberRangeResult
 
+
 class SQLMakerForMSSQL:
-        '''
-        Config Template
-           Config = {
-           'Database':'TMS_ATL',
-           'DBO':'dbo',
-           'TableName':'M-Delivery',
-           'WhereArgs':'[Name] IS NOT NULL',
-           'NumberOfRow':1000,
-           'Cols':[1,2,3],
-           'Values':[1,2,3],
-           }
-        '''
-        # def AddProc(self,Dataset):
-        #
+    '''
+    Config Template
+       Config = {
+       'Database':'TMS_ATL',
+       'DBO':'dbo',
+       'TableName':'M-Delivery',
+       'WhereArgs':'[Name] IS NOT NULL',
+       'NumberOfRow':1000,
+       'Cols':[1,2,3],
+       'Values':[1,2,3],
+       }
+    '''
 
-        def Make(self,OprType,Config):
-            Unziped = {
-                'Temp':[],
-                'Cols':None,
-                'Values':None,
-                'WhereIsNotNull':None,
-                'PrimeryKey':None,
-                'WhereValues':None,
-            }
-            Primery = ['WhereValues']
-            GUA = ['Cols','WhereIsNotNull','PrimeryKey']#The gourp is using '[]'
-            GUB = []#The gourp is using ''''
-            GUC = ['Values']
-            for DataSet in Primery + GUA + GUB + GUC:
-                if len(Config[DataSet]) > 0:
-                    for Element in Config[DataSet]:
-                        if DataSet in GUA:
-                            Unziped['Temp'].append("[%s]"%Element)
-                        elif DataSet in GUB:
-                            Unziped['Temp'].append("'%s'" % Element)
-                        elif DataSet in GUC and Primery:
-                            Unziped['Temp'].append(" %s = '%s' " % (Element))
-                    Unziped[DataSet] = reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(self, Unziped['Temp'], ","))
-                    Unziped['Temp'].clear()
-                else:pass
-            SQLTemplats = {
-                'SelectRaw': "SELECT %s FROM [%s].[%s].[%s] " % (Config['SelectType'], Config['Database'], Config['DBO'], Config['TableName']),
-                'Select': "SELECT %s %s FROM [%s].[%s].[%s] WHERE %s IS NOT NULL " % (Config['SelectType'],Unziped['Cols'],Config['Database'], Config['DBO'], Config['TableName'], Unziped['WhereIsNotNull']),
-                'Insert':"INSERT INTO [%s].[%s].[%s](%s) VALUES(%s)" % (Config['Database'],Config['DBO'],Config['TableName'],Unziped['Cols'],Unziped['Values']),
-                'Update':"UPDATE [%s].[%s].[%s] SET %s WHERE %s"%(Config['Database'], Config['DBO'], Config['TableName'],Unziped['Values'],Unziped['WhereValues'])
-            }
-            return SQLTemplats[OprType]
+    # def AddProc(self,Dataset):
+    #
 
-class DaPr():
+    def Make(self, OprType, Config):
+        Unziped = {
+            'Temp': [],
+            'Cols': None,
+            'Values': None,
+            'WhereIsNotNull': None,
+            'PrimeryKey': None,
+            'WhereValues': None,
+        }
+        Primery = ['WhereValues']
+        GUA = ['Cols', 'WhereIsNotNull', 'PrimeryKey']  # The gourp is using '[]'
+        GUB = []  # The gourp is using ''''
+        GUC = ['Values']
+        for DataSet in Primery + GUA + GUB + GUC:
+            if len(Config[DataSet]) > 0:
+                for Element in Config[DataSet]:
+                    if DataSet in GUA:
+                        Unziped['Temp'].append("[%s]" % Element)
+                    elif DataSet in GUB:
+                        Unziped['Temp'].append("'%s'" % Element)
+                    elif DataSet in GUC and Primery:
+                        Unziped['Temp'].append(" %s = '%s' " % (Element))
+                Unziped[DataSet] = reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(self, Unziped['Temp'], ","))
+                Unziped['Temp'].clear()
+            else:
+                pass
+        SQLTemplats = {
+            'SelectRaw': "SELECT %s FROM [%s].[%s].[%s] " % (
+            Config['SelectType'], Config['Database'], Config['DBO'], Config['TableName']),
+            'Select': "SELECT %s %s FROM [%s].[%s].[%s] WHERE %s IS NOT NULL " % (
+            Config['SelectType'], Unziped['Cols'], Config['Database'], Config['DBO'], Config['TableName'],
+            Unziped['WhereIsNotNull']),
+            'Insert': "INSERT INTO [%s].[%s].[%s](%s) VALUES(%s)" % (
+            Config['Database'], Config['DBO'], Config['TableName'], Unziped['Cols'], Unziped['Values']),
+            'Update': "UPDATE [%s].[%s].[%s] SET %s WHERE %s" % (
+            Config['Database'], Config['DBO'], Config['TableName'], Unziped['Values'], Unziped['WhereValues'])
+        }
+        return SQLTemplats[OprType]
+
+
+class DaPr:
 
     def FindDiffValueFromTwoDicts(self, type, Origi, Modified):
-        if type in ['dict','Dict']:
+        if type in ['dict', 'Dict']:
             Diff = {}
             for Key, Value in Origi.items():
                 try:
-                    if Modified[Key] == Value:pass
+                    if Modified[Key] == Value:
+                        pass
                     else:
                         Diff[Key] = Value
                 except:
                     pass
             return Diff
 
-    def KeepOne(self,rawdata):
+    def KeepOne(self, rawdata):
         KeepOne = []
         Package = []
         for Data in rawdata:
@@ -491,20 +513,20 @@ class DaPr():
         for Files in os.walk(Dir):
             for FileName in Files[2]:
                 if FileName.split(".")[-1] in FileExtensionList:
-                    FilePath = os.path.join(Files[0],FileName)
-                    FileList.append((FileName, os.path.getctime(FilePath),FilePath))
+                    FilePath = os.path.join(Files[0], FileName)
+                    FileList.append((FileName, os.path.getctime(FilePath), FilePath))
         if len(FileList) > 1:
             return sorted(FileList, key=lambda FileCreateTime: FileCreateTime[1])[-1][2]
         else:
             return False
 
-    def ReplaceDirSlash(self,Dir):
+    def ReplaceDirSlash(self, Dir):
         return reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(self, Dir.split("/"), "\\"))
 
-    def ReplaceDirSymbol(self, Dir,ReplaceFrom,ReplaceTo):
+    def ReplaceDirSymbol(self, Dir, ReplaceFrom, ReplaceTo):
         return reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(self, Dir.split(ReplaceFrom), ReplaceTo))
 
-    def RenameDictKeys(self,RawData,ReplaceKeyMap):
+    def RenameDictKeys(self, RawData, ReplaceKeyMap):
         for Key in RawData:
             for RDKey, RDVaule in ReplaceKeyMap.items():
                 if Key == RDKey:
@@ -545,14 +567,14 @@ class DaPr():
         del UnionData[-1]
         return UnionData
 
-    def MergeMultiTupleList(self,TupleList):
+    def MergeMultiTupleList(self, TupleList):
         List = []
         for Tuple in TupleList:
             for Data in Tuple:
                 List.append(Data)
         return List
 
-    def MergeTwoDicts(self,DictA,DicB):
+    def MergeTwoDicts(self, DictA, DicB):
         MergedDict = {}
         for Key, Value in DictA.items():
             MergedDict[Key] = Value
@@ -567,7 +589,7 @@ class DaPr():
                 ValidData[Key] = Value
         return ValidData
 
-    def RootPath(self,RootDirName):
+    def RootPath(self, RootDirName):
         try:
             initPath = os.getcwd().split('\\')
         except:
@@ -582,32 +604,33 @@ class DaPr():
         return reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(self, Temp, '\\'))
 
     def ConvertTwoListsToDict(self, ListForKey, ListForValue):
-        Dict = dict(zip(ListForKey,ListForValue))
+        Dict = dict(zip(ListForKey, ListForValue))
         return Dict
 
-    def Dedupe(self,DataSet):
+    def Dedupe(self, DataSet):
         Package = []
-        for Data in  DataSet:
+        for Data in DataSet:
             if Data not in Package:
                 Package.append(Data)
-            else:pass
+            else:
+                pass
         return Package
 
-    def TimestampToDateTime(self,timestamp):
+    def TimestampToDateTime(self, timestamp):
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(timestamp)))
 
-    def DatetimeToTimestamp(self,datetime):
+    def DatetimeToTimestamp(self, datetime):
         return int(datetime.timestamp())
 
     def DatetimeNow(self):
         return datetime.datetime.now()
 
-    def TimestampToDateTimeAsDict(self,timestamp):
+    def TimestampToDateTimeAsDict(self, timestamp):
         lt = time.localtime(timestamp)
         dtset = {
-            'year':time.strftime('%Y', lt),
-            'month':time.strftime('%m', lt),
-            'day':time.strftime('%d', lt),
+            'year': time.strftime('%Y', lt),
+            'month': time.strftime('%m', lt),
+            'day': time.strftime('%d', lt),
             'hour': time.strftime('%H', lt),
             'minite': time.strftime('%M', lt),
             'second': time.strftime('%S', lt),
@@ -617,17 +640,17 @@ class DaPr():
     def TimestampCurrTime(self):
         return int(time.time())
 
-    def TimeDiff(self,datetimeA,datetimeB):
+    def TimeDiff(self, datetimeA, datetimeB):
         timediff = datetimeA - datetimeB
         timediffR1 = str(timediff).split(', ')
-        if  len(timediffR1) > 1:
+        if len(timediffR1) > 1:
             timediffR1 = timediffR1[1]
             timediffR2 = timediffR1.split(':')
         else:
             timediffR2 = timediffR1[0].split(':')
         timediffDay = str(timediff.days).split(' day')
         timediffDay = int(float(timediffDay[0]))
-        day2hour = timediffDay*24
+        day2hour = timediffDay * 24
 
         dtset = {
             'day': timediffDay,
@@ -637,10 +660,11 @@ class DaPr():
         }
         return dtset
 
-class Exl():
+
+class Exl:
 
     def GetColDataByHeader(self, excel, sheetName, head):
-        import math,pandas
+        import math, pandas
         # print(pandas.read_excel(excel,sheet_name='T-Commbox',index_col='CityCode'))
         ExcelFile = pandas.read_excel(excel, sheet_name=sheetName)
         Bucket = []
@@ -659,7 +683,7 @@ class Exl():
                 Bucket.append(data)
         return Bucket
 
-    def GetColDataByHeaderWithCOM(self, excel, sheetName, head,Range,DoNotShowNone):
+    def GetColDataByHeaderWithCOM(self, excel, sheetName, head, Range, DoNotShowNone):
         ExlFile = ExlCom(filename=excel, isReadOnly=False, isVisible=False)
         Datasource = ExlFile.GetRange(sheet=sheetName, col1=Range[0], row1=Range[1], col2=Range[2], row2=Range[3])
         # print(Datasource)
@@ -685,106 +709,122 @@ class Exl():
         ExlFile.Close(0)
         return DataSet
 
-    def WriteDataToExcel(self, excel, sheetName,Dataset):
+    def WriteDataToExcel(self, excel, sheetName, Dataset):
         from openpyxl import load_workbook
-        Workbook = load_workbook(excel,read_only=False, keep_vba=True)
+        Workbook = load_workbook(excel, read_only=False, keep_vba=True)
         SelectedSheet = Workbook[sheetName]
         for data in Dataset:
             SelectedSheet[data['Cell']] = data['Data']
         Workbook.save(excel)
 
-    def VBACon(self, VBAFile, VBAFunction,ExcelVisible,SaveChanges,ResultPath, ResultFileType):
+    def VBACon(self, VBAFile, VBAFunction, ExcelVisible, SaveChanges, ResultPath, ResultFileType):
         print("CreatExcelApp")
-        ExcelBook = ExlCom(VBAFile,isVisible=ExcelVisible)
+        ExcelBook = ExlCom(VBAFile, isVisible=ExcelVisible)
         print("ExecuVBAFunction")
         ExcelBook.RunVBA(VBAFunction)
         print("CloseExcelFile")
         ExcelBook.Close(SaveChanges=SaveChanges)  # 关闭excel，不保存
-        if ResultPath == None:pass
+        if ResultPath == None:
+            pass
         else:
             print("OpenResult")
-            Infra.OpenFile(self,'start', DaPr.FindNewestFileInWindows(self, ResultPath, ResultFileType), None)
+            Infra.OpenFile(self, 'start', DaPr.FindNewestFileInWindows(self, ResultPath, ResultFileType), None)
         print("JobDone")
 
+
 class ExlCom:
-        """A utility to make it easier to get at Excel.    Remembering
-        to Save the data is your problem, as is    error handling.
-        Operates on one workbook at a time."""
+    """A utility to make it easier to get at Excel.    Remembering
+    to Save the data is your problem, as is    error handling.
+    Operates on one workbook at a time."""
 
-        def __init__(self, filename=None, isVisible=None, isReadOnly=None, Format=None, Password=None,
-                     WriteResPassword=None):  # 打开文件或者新建文件（如果不存在的话）
-            pythoncom.CoInitialize()
-            self.xlApp = win32com.client.Dispatch('Excel.Application')
-            self.xlApp.Visible = isVisible
-            if filename:
-                self.filename = filename
-                self.xlBook = self.xlApp.Workbooks.Open(filename, ReadOnly=isReadOnly, Format=Format, Password=Password,
-                                                        WriteResPassword=WriteResPassword)
-            else:
-                self.xlBook = self.xlApp.Workbooks.Add()
-                self.filename = ''
+    def __init__(self, filename=None, isVisible=None, isReadOnly=None, Format=None, Password=None,
+                 WriteResPassword=None):  # 打开文件或者新建文件（如果不存在的话）
+        pythoncom.CoInitialize()
+        self.xlApp = win32com.client.Dispatch('Excel.Application')
+        self.xlApp.Visible = isVisible
+        if filename:
+            self.filename = filename
+            self.xlBook = self.xlApp.Workbooks.Open(filename, ReadOnly=isReadOnly, Format=Format, Password=Password,
+                                                    WriteResPassword=WriteResPassword)
+        else:
+            self.xlBook = self.xlApp.Workbooks.Add()
+            self.filename = ''
 
-        def RunVBA(self,VBAFunction):
-            strPara = self.xlBook.Name + VBAFunction
-            status = self.xlApp.ExecuteExcel4Macro(strPara)
-            # print(status)
+    def RunVBA(self, VBAFunction):
+        strPara = self.xlBook.Name + VBAFunction
+        status = self.xlApp.ExecuteExcel4Macro(strPara)
+        # print(status)
 
-        def Save(self, newfilename=None):  # 保存文件
-            if newfilename:
-                self.filename = newfilename
-                self.xlBook.SaveAs(newfilename)
-            else:
-                self.xlBook.Save()
+    def Save(self, newfilename=None):  # 保存文件
+        if newfilename:
+            self.filename = newfilename
+            self.xlBook.SaveAs(newfilename)
+        else:
+            self.xlBook.Save()
 
-        def Close(self,SaveChanges):  # 关闭文件
-            self.xlBook.Close(SaveChanges=SaveChanges)
-            del self.xlApp
-            # pythoncom.CoUninitialize()
+    def Close(self, SaveChanges):  # 关闭文件
+        self.xlBook.Close(SaveChanges=SaveChanges)
+        del self.xlApp
+        # pythoncom.CoUninitialize()
 
-        def GetCell(self, sheet, row, col):  # 获取单元格的数据
-            "Get value of one cell"
-            sht = self.xlBook.Worksheets(sheet)
-            return sht.Cells(row, col).Value
+    def GetCell(self, sheet, row, col):  # 获取单元格的数据
+        "Get value of one cell"
+        sht = self.xlBook.Worksheets(sheet)
+        return sht.Cells(row, col).Value
 
-        def SetCell(self, sheet, row, col, value):  # 设置单元格的数据
-            "set value of one cell"
-            Sheet = self.xlBook.Worksheets(sheet)
-            Sheet.Cells(row, col).Value = value
+    def SetCell(self, sheet, row, col, value):  # 设置单元格的数据
+        "set value of one cell"
+        Sheet = self.xlBook.Worksheets(sheet)
+        Sheet.Cells(row, col).Value = value
 
-        def SetCellFormat(self, sheet, row, col):  # 设置单元格的数据
-            "set value of one cell"
-            Sheet = self.xlBook.Worksheets(sheet)
-            Sheet.Cells(row, col).Font.Size = 15  # 字体大小
-            Sheet.Cells(row, col).Font.Bold = True  # 是否黑体
-            Sheet.Cells(row, col).Name = "Arial"  # 字体类型
-            Sheet.Cells(row, col).Interior.ColorIndex = 3  # 表格背景
-            # sht.Range("A1").Borders.LineStyle = xlDouble
-            Sheet.Cells(row, col).BorderAround(1, 4)  # 表格边框
-            Sheet.Rows(3).RowHeight = 30  # 行高
-            Sheet.Cells(row, col).HorizontalAlignment = -4131  # 水平居中xlCenter
-            Sheet.Cells(row, col).VerticalAlignment = -4160  #
+    def SetCellFormat(self, sheet, row, col):  # 设置单元格的数据
+        "set value of one cell"
+        Sheet = self.xlBook.Worksheets(sheet)
+        Sheet.Cells(row, col).Font.Size = 15  # 字体大小
+        Sheet.Cells(row, col).Font.Bold = True  # 是否黑体
+        Sheet.Cells(row, col).Name = "Arial"  # 字体类型
+        Sheet.Cells(row, col).Interior.ColorIndex = 3  # 表格背景
+        # sht.Range("A1").Borders.LineStyle = xlDouble
+        Sheet.Cells(row, col).BorderAround(1, 4)  # 表格边框
+        Sheet.Rows(3).RowHeight = 30  # 行高
+        Sheet.Cells(row, col).HorizontalAlignment = -4131  # 水平居中xlCenter
+        Sheet.Cells(row, col).VerticalAlignment = -4160  #
 
-        def DeleteRow(self, sheet, row):
-            sht = self.xlBook.Worksheets(sheet)
-            sht.Rows(row).Delete()  # 删除行
-            sht.Columns(row).Delete()  # 删除列
+    def DeleteRow(self, sheet, row):
+        sht = self.xlBook.Worksheets(sheet)
+        sht.Rows(row).Delete()  # 删除行
+        sht.Columns(row).Delete()  # 删除列
 
-        def GetRange(self, sheet, row1, col1, row2, col2):  # 获得一块区域的数据，返回为一个二维元组
-            "return a 2d array (i.e. tuple of tuples)"
-            sht = self.xlBook.Worksheets(sheet)
-            return sht.Range(sht.Cells(row1, col1), sht.Cells(row2, col2)).Value
+    def GetRange(self, sheet, row1, col1, row2, col2):  # 获得一块区域的数据，返回为一个二维元组
+        "return a 2d array (i.e. tuple of tuples)"
+        sht = self.xlBook.Worksheets(sheet)
+        return sht.Range(sht.Cells(row1, col1), sht.Cells(row2, col2)).Value
 
-        def AddPicture(self, sheet, pictureName, Left, Top, Width, Height):  # 插入图片
-            "Insert a picture in sheet"
-            sht = self.xlBook.Worksheets(sheet)
-            sht.Shapes.AddPicture(pictureName, 1, 1, Left, Top, Width, Height)
+    def AddPicture(self, sheet, pictureName, Left, Top, Width, Height):  # 插入图片
+        "Insert a picture in sheet"
+        sht = self.xlBook.Worksheets(sheet)
+        sht.Shapes.AddPicture(pictureName, 1, 1, Left, Top, Width, Height)
 
-        def CopySheet(self, before):  # 复制工作表
-            "copy sheet"
-            shts = self.xlBook.Worksheets
-            shts(1).Copy(None, shts(1))
+    def CopySheet(self, before):  # 复制工作表
+        "copy sheet"
+        shts = self.xlBook.Worksheets
+        shts(1).Copy(None, shts(1))
 
-        def InserRow(self, sheet, row):
-            sht = self.xlBook.Worksheets(sheet)
-            sht.Rows(row).Insert(1)
+    def InserRow(self, sheet, row):
+        sht = self.xlBook.Worksheets(sheet)
+        sht.Rows(row).Insert(1)
 
+
+class Utl:
+
+    def color_picker(self, is_random, index, color_set):
+        if is_random:
+            selected_id = int(random.uniform(0, len(color_set)))
+            selected = color_set[selected_id]
+            del color_set[selected_id]
+            return selected
+        else:
+            color_c = copy.deepcopy(color_set)
+            color_r = color_c[index]
+            del color_c[index]
+            return color_r
