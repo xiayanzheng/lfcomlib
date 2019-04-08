@@ -828,3 +828,10 @@ class Utl:
             color_r = color_c[index]
             del color_c[index]
             return color_r
+
+    @staticmethod
+    def print_d(is_debug, msgs):
+        if is_debug:
+            for msg in msgs:
+                print(msg)
+
