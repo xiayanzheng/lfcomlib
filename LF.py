@@ -5,8 +5,7 @@ import urllib.parse as parse
 from xlutils.copy import copy
 from functools import reduce
 from xlwt import Style
-import win32com.client
-import pythoncom
+
 
 
 class ErrMsg:
@@ -77,7 +76,10 @@ class Infra:
             ParamX = ' '
         else:
             ParamX = Param
-        os.system("%s %s %s" % (Program, DaPr.ReplaceDirSlash(self, Dir), ParamX))
+        os.system("{} {} {}".format(Program, DaPr.ReplaceDirSlash(self, Dir), ParamX))
+
+    def StartExe(self, Path, Program):
+        os.system("start {}".format(os.path.join(Path, Program)))
 
     def PostWR(self, DataSource, Parameter):
         Counter = 0
@@ -257,7 +259,7 @@ class Infra:
         Value = ReadConfig.get(Section, Key)
         return Value
 
-    def read_ini_as_dict(ConfigFile):
+    def read_ini_as_dict(self,ConfigFile):
         ReadConfig = configparser.ConfigParser()
         ReadConfig.read_file(codecs.open(ConfigFile, "r", "utf-8-sig"))
         Dict = dict(ReadConfig._sections)
@@ -316,8 +318,12 @@ class Infra:
         file = os.path.join(filepath, filename)
         # Reading data from file
         with open(file, 'r') as f:
-            dict = json.load(f)
-            return dict
+            configstr = f.read().replace('\\', '\\\\').encode(encoding='utf-8')
+            configstr = configstr
+            configtmp = json.loads(configstr)
+            # config = {k: v.replace('\\\\', '\\') for k, v in configtmp.items()}
+
+            return configtmp
 
     def write_json(self, filepath, filename, data):
         import json
@@ -739,6 +745,8 @@ class ExlCom:
 
     def __init__(self, filename=None, isVisible=None, isReadOnly=None, Format=None, Password=None,
                  WriteResPassword=None):  # 打开文件或者新建文件（如果不存在的话）
+        import win32com.client
+        import pythoncom
         pythoncom.CoInitialize()
         self.xlApp = win32com.client.Dispatch('Excel.Application')
         self.xlApp.Visible = isVisible
