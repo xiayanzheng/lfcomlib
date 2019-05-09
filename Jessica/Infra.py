@@ -83,10 +83,10 @@ class Infra:
 
     def MariaDBExpress(self, SQL, Data, NumberOfRow, ):
         try:
-            from serverConfig.init import globalsetting
-            return self.MariaDB(SQL, globalsetting.mariaHost, globalsetting.mariaPort,
-                                 globalsetting.mariaUser, globalsetting.mariaPassword,
-                                 globalsetting.mariaDatabase, globalsetting.mariaCharSet, Data, NumberOfRow, )
+            from serverConfig.init import globalSetting
+            return self.MariaDB(SQL, globalSetting.mariaHost, globalSetting.mariaPort,
+                                globalSetting.mariaUser, globalSetting.mariaPassword,
+                                globalSetting.mariaDatabase, globalSetting.mariaCharSet, Data, NumberOfRow, )
         except Exception as e:
             print(e)
             return False
