@@ -1,21 +1,21 @@
 class Numbers:
 
-    def GenRange(self, StartNumber, EndNumber, GapNumber):
-        NumberRangeResult = []
-        RowNumberSP = StartNumber
-        Gap = int(EndNumber) - int(StartNumber)
-        if Gap > GapNumber:
-            for X in range(int(Gap / GapNumber)):
-                Temp = []
-                Temp.append(RowNumberSP)
-                Temp.append(RowNumberSP + GapNumber)
-                NumberRangeResult.append(Temp)
-                RowNumberSP += GapNumber
-            Temp = []
-            Temp.append(RowNumberSP)
-            Temp.append(RowNumberSP + int(Gap % GapNumber))
-            NumberRangeResult.append(Temp)
-            RowNumberSP += int(Gap % GapNumber)
+    def gen_range(self, StartNumber, EndNumber, GapNumber):
+        number_range_result = []
+        row_number_sp = StartNumber
+        gap = int(EndNumber) - int(StartNumber)
+        if gap > GapNumber:
+            for X in range(int(gap / GapNumber)):
+                temp = []
+                temp.append(row_number_sp)
+                temp.append(row_number_sp + GapNumber)
+                number_range_result.append(temp)
+                row_number_sp += GapNumber
+            temp = []
+            temp.append(row_number_sp)
+            temp.append(row_number_sp + int(gap % GapNumber))
+            number_range_result.append(temp)
+            row_number_sp += int(gap % GapNumber)
         else:
-            NumberRangeResult.append([StartNumber, EndNumber])
-        return NumberRangeResult
+            number_range_result.append([StartNumber, EndNumber])
+        return number_range_result

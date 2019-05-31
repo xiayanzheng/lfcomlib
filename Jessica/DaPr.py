@@ -148,7 +148,7 @@ class DaPr:
 
     def TimestampToDateTimeAsDict(self, timestamp):
         lt = time.localtime(timestamp)
-        dtset = {
+        data_set = {
             'year': time.strftime('%Y', lt),
             'month': time.strftime('%m', lt),
             'day': time.strftime('%d', lt),
@@ -156,7 +156,7 @@ class DaPr:
             'minite': time.strftime('%M', lt),
             'second': time.strftime('%S', lt),
         }
-        return dtset
+        return data_set
 
     def TimestampCurrTime(self):
         return int(time.time())

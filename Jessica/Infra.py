@@ -185,6 +185,17 @@ class Infra:
         # print(ExcuteBat.returncode)
         ExcuetBat.terminate()
 
+    def wcmd(self, command):
+        ExcuetBat = subprocess.Popen("cmd.exe /c" + "%s abc" % command, stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT)
+        Curline = ExcuetBat.stdout.readline()
+        while (Curline != b''):
+            # print(Curline.decode('GBK'))
+            Curline = ExcuetBat.stdout.readline()
+        ExcuetBat.wait()
+        # print(ExcuteBat.returncode)
+        ExcuetBat.terminate()
+
     def Readini(ConfigFile, Section, Key):
         ReadConfig = configparser.ConfigParser()
         ReadConfig.read_file(codecs.open(ConfigFile, "r", "utf-8-sig"))
