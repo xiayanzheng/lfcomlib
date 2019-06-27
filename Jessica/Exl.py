@@ -68,7 +68,7 @@ class Exl:
             pass
         else:
             print("OpenResult")
-            Infra.OpenFile('start', DaPr.FindNewestFileInWindows(ResultPath, ResultFileType), None)
+            Infra.open_file('start', DaPr.FindNewestFileInWindows(ResultPath, ResultFileType), None)
         print("JobDone")
 
 class ExlCom:
@@ -109,7 +109,7 @@ class ExlCom:
         # pythoncom.CoUninitialize()
 
     def GetCell(self, sheet, row, col):  # 获取单元格的数据
-        "Get value of one cell"
+        "get value of one cell"
         sht = self.xlBook.Worksheets(sheet)
         return sht.Cells(row, col).Value
 

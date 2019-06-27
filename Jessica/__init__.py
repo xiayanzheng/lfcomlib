@@ -1,4 +1,4 @@
-import requests, os, time, csv, sqlite3, subprocess, configparser, pymysql, xlrd, codecs, datetime
+import requests, os, time, csv, sqlite3, subprocess, configparser, pymysql, xlrd, codecs, datetime, psycopg2
 import random
 import copy
 import urllib.parse as parse

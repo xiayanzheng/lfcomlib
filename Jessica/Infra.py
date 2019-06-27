@@ -1,275 +1,349 @@
 from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg
+from lfcomlib.Jessica import psycopg2
 
 
 class Infra:
 
-    def OpenDir(self, Dir):
-        os.system("explorer %s" % DaPr.ReplaceDirSlash(Dir))
+    def open_dir(self, selected_dir):
+        os.system("explorer %s" % DaPr.ReplaceDirSlash(selected_dir))
 
-    def OpenFile(self, Program, Dir, Param):
-        if Param == None:
-            ParamX = ' '
+    def open_file(self, program, selected_dir, param):
+        if param is None:
+            param_x = ' '
         else:
-            ParamX = Param
-        os.system("{} {} {}".format(Program, DaPr.ReplaceDirSlash(Dir), ParamX))
+            param_x = param
+        os.system("{} {} {}".format(program, DaPr.ReplaceDirSlash(selected_dir), param_x))
 
-    def StartExe(self, Path, Program):
-        os.system("start {}".format(os.path.join(Path, Program)))
+    def start_exe(self, path, program):
+        os.system("start {}".format(os.path.join(path, program)))
 
-    def PostWR(self, DataSource, Parameter):
-        Counter = 0
-        Response = self.Post(DataSource, Parameter)
-        while Response == False:
+    def post_wr(self, data_source, parameter):
+        counter = 0
+        response = self.post(data_source, parameter)
+        while response is False:
             time.sleep(1)
-            if Counter == 10:
+            if counter == 10:
                 if input("已经尝试10次是否继续?(y/n)") in ['y', 'Y']:
-                    Counter = 0
-                    Response = self.Post(DataSource, Parameter)
+                    counter = 0
+                    response = self.post(data_source, parameter)
                 else:
                     break
             else:
-                Response = self.Post(DataSource, Parameter)
-                Counter += 1
+                response = self.post(data_source, parameter)
+                counter += 1
         else:
-            return Response
+            return response
 
-    def GetWR(self, DataSource, Parameter):
-        Counter = 0
-        Response = self.Get(DataSource, Parameter)
-        while Response == False:
+    def get_wr(self, data_source, parameter):
+        counter = 0
+        response = self.get(data_source, parameter)
+        while response is False:
             time.sleep(1)
-            if Counter == 10:
+            if counter == 10:
                 if input("已经尝试10次是否继续?(y/n)") in ['y', 'Y']:
-                    Counter = 0
-                    Response = self.Get(DataSource, Parameter)
+                    counter = 0
+                    response = self.get(data_source, parameter)
                 else:
                     break
             else:
-                Response = self.Get(DataSource, Parameter)
-                Counter += 1
+                response = self.get(data_source, parameter)
+                counter += 1
         else:
-            return Response
+            return response
 
-    def Post(self, DataSource, Parameter):
+    def post(self, data_source, parameter):
         try:
             # 构造并发送Post请求
-            Request = requests.post(DataSource, Parameter)
+            request = requests.post(data_source, parameter)
             # 定义返回数据变量名称
-            Response = Request.json()
+            response = request.json()
             # 返回响应报文
-            return Response
-        except:
+            return response
+        finally:
             # 输出"无网络连接"消息
             print(Msg.NoNetWorkConnection)
             time.sleep(5)
             # 返回 Main.Flow(sel返回到方法
             return False
 
-    def Get(self, DataSource, ParameterDict):
+    def get(self, data_source, parameter_dict):
         try:
             # 构造并发送Get请求(在APIUrl后加入查询参数的字典)
-            Request = "%s?%s" % (DataSource, parse.urlencode(ParameterDict))
-            # Request = RawRequest.encode("utf-8")
-            # print(Request)
+            request = "%s?%s" % (data_source, parse.urlencode(parameter_dict))
+            # request = RawRequest.encode("utf-8")
+            # print(request)
             # 定义返回报文变量名称
-            Response = requests.get(Request)
-            return Response
-        except:
+            response = requests.get(request)
+            return response
+        finally:
             # 输出"无网络连接"消息
             print(Msg.NoNetWorkConnection)
             # time.sleep(5)
             # 返回 Main.Flow(sel返回到方法
             return False
 
-    def MariaDBExpress(self, SQL, Data, NumberOfRow, ):
-        try:
-            from serverConfig.init import globalSetting
-            return self.MariaDB(SQL, globalSetting.mariaHost, globalSetting.mariaPort,
-                                globalSetting.mariaUser, globalSetting.mariaPassword,
-                                globalSetting.mariaDatabase, globalSetting.mariaCharSet, Data, NumberOfRow, )
-        except Exception as e:
-            print(e)
+    def db_entry(self, **kwargs):
+        from serverConfig.init import globalSetting
+        db_name = globalSetting.db_name
+        db_config = globalSetting.db_config
+        if db_name == "maria":
+            try:
+                db_config["SQL"] = kwargs['sql']
+                db_config["opr_type"] = kwargs['opr_type']
+                db_config["NumberOfRow"] = kwargs['number_of_row']
+                return self.maria_db(**db_config)
+            except Exception as e:
+                print(e)
+                return False
+        elif db_name == "postgres":
+            try:
+                db_config["sql"] = kwargs['sql']
+                db_config["opr_type"] = kwargs['opr_type']
+                db_config["NumberOfRow"] = kwargs['number_of_row']
+                return self.postgres_db(**db_config)
+            except Exception as e:
+                print(e)
+                return False
+
+    def sqlalcheny_uri_maker(self, **kwargs):
+        db_name = kwargs['db_name']
+        db_config = kwargs['db_config']
+        if db_name in ["maria", "mysql"]:
+            '''
+            mysql+pymysql://root:hch123@127.0.0.1/lfnova?charset=utf8mb4
+            '''
+            uri = "{}://{}:{}@{}/{}?charset={}".format(db_config['sql_alchemy'],
+                       db_config['User'],
+                       db_config['Password'],
+                       db_config['Host'],
+                       db_config['Database'],
+                       db_config['CharSet'])
+            print(uri)
+            return uri
+        elif db_name == "postgres":
+            '''
+            postgresql+psycopg2://user:password@host/dbname
+            '''
+            uri = "{}://{}:{}@{}/{}".format(db_config['sql_alchemy'],
+                       db_config['User'],
+                       db_config['Password'],
+                       db_config['Host'],
+                       db_config['Database']
+                       )
+            return uri
+
+    def postgres_db(self, **kwargs):
+        print("121321321232")
+        opr_type = kwargs['opr_type']
+        conn = psycopg2.connect(database=kwargs["Database"],
+                                user=kwargs["User"],
+                                password=kwargs["Password"],
+                                host=kwargs["Host"],
+                                port=kwargs["Port"])
+        cursor = conn.cursor()
+        if opr_type == "update" or opr_type == "insert":
+            cursor.execute(kwargs['sql'])
+            conn.commit()
+            conn.close()
+            return True
+        elif opr_type == "select":
+            print(kwargs['sql'])
+            cursor.execute(kwargs['sql'])
+            if kwargs['number_of_row'] == 0:
+                rows = cursor.fetchall()
+                conn.close()
+                print(rows)
+                return rows
+        else:
             return False
 
-    def MariaDB(self, SQL, Host, Port, User, Password, Database, CharSet, Data, NumberOfRow, ):
+    def maria_db(self, **kwargs):
         try:
             # 连接MySQL数据库
-            ConnectDataBase = pymysql.connect(host=Host, port=Port, user=User, password=Password, db=Database,
-                                              charset=CharSet, cursorclass=pymysql.cursors.DictCursor)
+            db = pymysql.connect(host=kwargs["Host"],
+                                 port=kwargs["Port"],
+                                 user=kwargs["User"],
+                                 password=kwargs["Password"],
+                                 db=kwargs["Database"],
+                                 charset=kwargs["CharSet"],
+                                 cursorclass=pymysql.cursors.DictCursor)
             # 通过cursor创建游标
-            DataBaseCursor = ConnectDataBase.cursor()
+            db_cursor = db.cursor()
             # 执行数据查询
-            DataBaseCursor.execute(SQL)
-            if Data == "None":
-                DataBaseCursor.execute(SQL)
-                if NumberOfRow == 1:
-                    RawData = DataBaseCursor.fetchone()
-                    ConnectDataBase.close()
-                    return RawData
-                if NumberOfRow > 0:
-                    RawData = DataBaseCursor.fetchmany(NumberOfRow)
-                    ConnectDataBase.close()
-                    return RawData
+            db_cursor.execute(kwargs["SQL"])
+            if kwargs["opr_type"] == "select":
+                db_cursor.execute(kwargs["SQL"])
+                if kwargs["NumberOfRow"] == 1:
+                    raw_data = db_cursor.fetchone()
+                    db.close()
+                    return raw_data
+                if kwargs["NumberOfRow"] > 0:
+                    raw_data = db_cursor.fetchmany(kwargs["NumberOfRow"])
+                    db.close()
+                    return raw_data
                 else:
-                    RawData = DataBaseCursor.fetchall()
-                    ConnectDataBase.close()
-                    return RawData
+                    raw_data = db_cursor.fetchall()
+                    db.close()
+                    return raw_data
             else:
-                DataBaseCursor.execute(SQL)
-                ConnectDataBase.commit()
-                ConnectDataBase.close()
+                db_cursor.execute(kwargs["SQL"])
+                db.commit()
+                db.close()
                 return True
         except Exception as e:
             print(e)
             return False
 
-    def SQLite3(SQL, Data, OutputType, NumberOfRow, Database):
+    def sqlite3(self, sql, data, output_type, number_of_row, database):
 
         try:
-            if OutputType != 'Dict':
-                ConnectDataBase = sqlite3.connect(Database)
-                CursorDataBase = ConnectDataBase.cursor()
-                ConnectDataBase.row_factory = Infra.dict_factory
+            db = sqlite3.connect(database)
+            if output_type != 'Dict':
+                db_cursor = db.cursor()
+                db.row_factory = self.dict_factory
             else:
-                ConnectDataBase = sqlite3.connect(Database)
-                CursorDataBase = ConnectDataBase.cursor()
+                db_cursor = db.cursor()
 
-            if Data == None:
-                SQLS = CursorDataBase.execute(SQL)
-                if NumberOfRow == 1:
-                    RawData = SQLS.fetchone()
-                elif NumberOfRow > 0:
-                    RawData = SQLS.fetchmany(NumberOfRow)
+            if data is None:
+                db_instance = db_cursor.execute(sql)
+                if number_of_row == 1:
+                    raw_data = db_instance.fetchone()
+                elif number_of_row > 0:
+                    raw_data = db_instance.fetchmany(number_of_row)
                 else:
-                    RawData = SQLS.fetchall()
-                if OutputType == "List":
-                    return DaPr.MergeMultiTupleList(object, RawData)
+                    raw_data = db_instance.fetchall()
+                if output_type == "List":
+                    return DaPr.MergeMultiTupleList(object, raw_data)
                 else:
-                    return RawData
+                    return raw_data
             else:
-                CursorDataBase.execute(SQL, Data)
-                ConnectDataBase.commit()
-        except:
+                db_cursor.execute(sql, data)
+                db.commit()
+        finally:
             # print("[!!]数据库写入失败请联系yzxia@hitachi-systems.cn")
             return False
 
-    def SQLite3Debug(SQL, Data, OutPutType, NumberOfRow, Database):
-        ConnectDataBase = sqlite3.connect(Database)
-        CursorDataBase = ConnectDataBase.cursor()
-
-        if Data == None:
-            SQLS = CursorDataBase.execute(SQL)
-            if NumberOfRow == 1:
-                RawData = SQLS.fetchone()
-            elif NumberOfRow > 0:
-                RawData = SQLS.fetchmany(NumberOfRow)
-            else:
-                RawData = SQLS.fetchall()
-            if OutPutType == "List":
-                return DaPr.MergeMultiTupleList(RawData)
-            else:
-                return RawData
+    def sqlite3_debug(self, sql, data, output_type, number_of_row, database):
+        db = sqlite3.connect(database)
+        if output_type != 'Dict':
+            db_cursor = db.cursor()
+            db.row_factory = self.dict_factory
         else:
-            CursorDataBase.execute(SQL, Data)
-            ConnectDataBase.commit()
+            db_cursor = db.cursor()
 
-    def ExcuteBat(self, BatFilePath, BatFile):
-        BatFilePath = os.path.join(BatFilePath, BatFile)
-        ExcuetBat = subprocess.Popen("cmd.exe /c" + "%s abc" % BatFilePath, stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT)
-        Curline = ExcuetBat.stdout.readline()
-        while (Curline != b''):
-            # print(Curline.decode('GBK'))
-            Curline = ExcuetBat.stdout.readline()
-        ExcuetBat.wait()
-        # print(ExcuteBat.returncode)
-        ExcuetBat.terminate()
+        if data is None:
+            db_instance = db_cursor.execute(sql)
+            if number_of_row == 1:
+                raw_data = db_instance.fetchone()
+            elif number_of_row > 0:
+                raw_data = db_instance.fetchmany(number_of_row)
+            else:
+                raw_data = db_instance.fetchall()
+            if output_type == "List":
+                return DaPr.MergeMultiTupleList(raw_data)
+            else:
+                return raw_data
+        else:
+            db_cursor.execute(sql, data)
+            db.commit()
+
+    def excute_bat(self, bat_file_path, bat_file):
+        bat_file_path = os.path.join(bat_file_path, bat_file)
+        exe_bat = subprocess.Popen("cmd.exe /c" + "%s abc" % bat_file_path, stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT)
+        cur_line = exe_bat.stdout.readline()
+        while (cur_line != b''):
+            # print(cur_line.decode('GBK'))
+            cur_line = exe_bat.stdout.readline()
+        exe_bat.wait()
+        # print(excute_bat.returncode)
+        exe_bat.terminate()
 
     def wcmd(self, command):
-        ExcuetBat = subprocess.Popen("cmd.exe /c" + "%s abc" % command, stdout=subprocess.PIPE,
-                                     stderr=subprocess.STDOUT)
-        Curline = ExcuetBat.stdout.readline()
-        while (Curline != b''):
-            # print(Curline.decode('GBK'))
-            Curline = ExcuetBat.stdout.readline()
-        ExcuetBat.wait()
-        # print(ExcuteBat.returncode)
-        ExcuetBat.terminate()
+        excuet_bat = subprocess.Popen("cmd.exe /c" + "%s abc" % command, stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT)
+        cur_line = excuet_bat.stdout.readline()
+        while (cur_line != b''):
+            # print(cur_line.decode('GBK'))
+            cur_line = excuet_bat.stdout.readline()
+        excuet_bat.wait()
+        # print(excute_bat.returncode)
+        excuet_bat.terminate()
 
-    def Readini(ConfigFile, Section, Key):
-        ReadConfig = configparser.ConfigParser()
-        ReadConfig.read_file(codecs.open(ConfigFile, "r", "utf-8-sig"))
+    def read_ini(self, config_file, section, key):
+        read_config = configparser.ConfigParser()
+        read_config.read_file(codecs.open(config_file, "r", "utf-8-sig"))
         # ReadConfig.sections()
-        ReadConfig.options(Section)
-        # ReadConfig.items(Section)
-        Value = ReadConfig.get(Section, Key)
-        return Value
+        read_config.options(section)
+        # ReadConfig.items(section)
+        value = read_config.get(section, key)
+        return value
 
-    def read_ini_as_dict(self,ConfigFile):
-        ReadConfig = configparser.ConfigParser()
-        ReadConfig.read_file(codecs.open(ConfigFile, "r", "utf-8-sig"))
-        Dict = dict(ReadConfig._sections)
-        for Key in Dict:
-            Dict[Key] = dict(Dict[Key])
-        return Dict
+    def read_ini_as_dict(self, config_file):
+        read_config = configparser.ConfigParser()
+        read_config.read_file(codecs.open(config_file, "r", "utf-8-sig"))
+        dict_data = dict(read_config._sections)
+        for Key in dict_data:
+            dict_data[Key] = dict(dict_data[Key])
+        return dict_data
 
-    def ado_db_con(self, Mode, Host, DB, User, Passsowrd, Proxy, ProxyPort, SQL, Outputtype):
-        ConnParm = {'host': r"%s" % Host,
-                    'database': DB,
-                    'user': User,
-                    'password': Passsowrd}
-        ConnParm['connection_string'] = """Provider=SQLOLEDB.1;
-        User ID=%(user)s; Password=%(password)s;
+    def ado_db_con(self, mode, host, db, user, password, proxy, proxy_port, sql, output_type):
+        conn_parm = {'host': r"%s" % host,
+                     'database': db,
+                     'user': user,
+                     'password': password}
+        conn_parm['connection_string'] = """Provider=SQLOLEDB.1;
+        user ID=%(user)s; Password=%(password)s;
         Initial Catalog=%(database)s; Data Source= %(host)s"""
-        if len(Proxy) > 1:
-            import adodbapi.remote as AdoLib
-            ConnParm['proxy_host'] = Proxy
-            if len(ProxyPort) > 1:
-                ConnParm['proxy_port'] = ProxyPort
+        if len(proxy) > 1:
+            import adodbapi.remote as ado_lib
+            conn_parm['proxy_host'] = proxy
+            if len(proxy_port) > 1:
+                conn_parm['proxy_port'] = proxy_port
             else:
                 pass
         else:
-            import adodbapi as AdoLib
-        Ado = AdoLib.connect(ConnParm)
-        AdoCur = Ado.cursor()
-        if Mode == 'w':
+            import adodbapi as ado_lib
+        ado = ado_lib.connect(conn_parm)
+        ado_cur = ado.cursor()
+        if mode == 'w':
             try:
-                AdoCur.execute(SQL)
-                Ado.commit()
-                Ado.close()
+                ado_cur.execute(sql)
+                ado.commit()
+                ado.close()
                 return True
             except Exception as err:
                 print(err)
                 return False
         else:
-            if Outputtype == 'Dict':
-                AdoCur.execute(SQL)
-                Columns = [column[0] for column in AdoCur.description]
-                RawData = []
-                for Row in AdoCur.fetchall():
-                    RawData.append(dict(zip(Columns, Row)))
-                Ado.close()
-                return RawData
+            if output_type == 'Dict':
+                ado_cur.execute(sql)
+                columns = [column[0] for column in ado_cur.description]
+                raw_data = []
+                for Row in ado_cur.fetchall():
+                    raw_data.append(dict(zip(columns, Row)))
+                ado.close()
+                return raw_data
             else:
-                AdoCur.execute(SQL)
-                RawData = []
-                for Row in AdoCur.fetchall():
-                    for Rowdata in Row:
-                        RawData.append(Rowdata)
-                Ado.close()
-                return RawData
+                ado_cur.execute(sql)
+                raw_data = []
+                for Row in ado_cur.fetchall():
+                    for row_data in Row:
+                        raw_data.append(row_data)
+                ado.close()
+                return raw_data
 
     def read_json(self, filepath, filename):
         import json
         file = os.path.join(filepath, filename)
         # Reading data from file
         with open(file, 'r') as f:
-            configstr = f.read().replace('\\', '\\\\').encode(encoding='utf-8')
-            configstr = configstr
-            configtmp = json.loads(configstr)
-            # config = {k: v.replace('\\\\', '\\') for k, v in configtmp.items()}
+            config_str = f.read().replace('\\', '\\\\').encode(encoding='utf-8')
+            config_str = config_str
+            config_tmp = json.loads(config_str)
+            # config = {k: v.replace('\\\\', '\\') for k, v in config_tmp.items()}
 
-            return configtmp
+            return config_tmp
 
     def write_json(self, filepath, filename, data):
         import json
