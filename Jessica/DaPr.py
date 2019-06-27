@@ -3,7 +3,7 @@ from lfcomlib.Jessica import os, time, datetime, reduce
 
 class DaPr:
 
-    def FindDiffValueFromTwoDicts(self, type, Origi, Modified):
+    def find_diff_value_from_two_dicts(self, type, Origi, Modified):
         if type in ['dict', 'Dict']:
             Diff = {}
             for Key, Value in Origi.items():
@@ -16,7 +16,7 @@ class DaPr:
                     pass
             return Diff
 
-    def KeepOne(self, rawdata):
+    def keep_one(self, rawdata):
         KeepOne = []
         Package = []
         for Data in rawdata:
@@ -124,29 +124,36 @@ class DaPr:
                 break
         return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(Temp, '\\'))
 
-    def ConvertTwoListsToDict(self, ListForKey, ListForValue):
-        Dict = dict(zip(ListForKey, ListForValue))
-        return Dict
+    def convert_two_lists_to_dict(self, ListForKey, ListForValue):
+        dict = dict(zip(ListForKey, ListForValue))
+        return dict
 
-    def Dedupe(self, DataSet):
-        Package = []
-        for Data in DataSet:
-            if Data not in Package:
-                Package.append(Data)
+    def dedupe(self, dataset):
+        package = []
+        for Data in dataset:
+            if Data not in package:
+                package.append(Data)
             else:
                 pass
-        return Package
+        return package
 
-    def TimestampToDateTime(self, timestamp):
+    def timestamp_to_datetime(self, timestamp):
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(timestamp)))
 
-    def DatetimeToTimestamp(self, datetime):
+    def datetime_to_timestamp(self, datetime):
         return int(datetime.timestamp())
 
-    def DatetimeNow(self):
+    def datetime_now(self):
         return datetime.datetime.now()
 
-    def TimestampToDateTimeAsDict(self, timestamp):
+    def safe_remove_key_from_dict(self, my_dict, my_key):
+        try:
+            del my_dict[my_key]
+            return True
+        finally:
+            return False
+
+    def timestamp_to_datetime_as_dict(self, timestamp):
         lt = time.localtime(timestamp)
         data_set = {
             'year': time.strftime('%Y', lt),
@@ -158,25 +165,25 @@ class DaPr:
         }
         return data_set
 
-    def TimestampCurrTime(self):
+    def timestamp_curr_time(self):
         return int(time.time())
 
-    def TimeDiff(self, datetimeA, datetimeB):
-        timediff = datetimeA - datetimeB
-        timediffR1 = str(timediff).split(', ')
-        if len(timediffR1) > 1:
-            timediffR1 = timediffR1[1]
-            timediffR2 = timediffR1.split(':')
+    def time_diff(self, datetimeA, datetimeB):
+        time_diff = datetimeA - datetimeB
+        time_diff_r1 = str(time_diff).split(', ')
+        if len(time_diff_r1) > 1:
+            time_diff_r1 = time_diff_r1[1]
+            time_diff_r2 = time_diff_r1.split(':')
         else:
-            timediffR2 = timediffR1[0].split(':')
-        timediffDay = str(timediff.days).split(' day')
-        timediffDay = int(float(timediffDay[0]))
-        day2hour = timediffDay * 24
+            time_diff_r2 = time_diff_r1[0].split(':')
+        time_diff_day = str(time_diff.days).split(' day')
+        time_diff_day = int(float(time_diff_day[0]))
+        day2hour = time_diff_day * 24
 
-        dtset = {
-            'day': timediffDay,
-            'hour': int(float(timediffR2[0])) + day2hour,
-            'minute': int(float(timediffR2[1])),
-            'second': int(float(timediffR2[2])),
+        dt_set = {
+            'day': time_diff_day,
+            'hour': int(float(time_diff_r2[0])) + day2hour,
+            'minute': int(float(time_diff_r2[1])),
+            'second': int(float(time_diff_r2[2])),
         }
-        return dtset
+        return dt_set

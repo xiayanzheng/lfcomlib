@@ -118,7 +118,6 @@ class Infra:
                        db_config['Host'],
                        db_config['Database'],
                        db_config['CharSet'])
-            print(uri)
             return uri
         elif db_name == "postgres":
             '''
@@ -133,7 +132,6 @@ class Infra:
             return uri
 
     def postgres_db(self, **kwargs):
-        print("121321321232")
         opr_type = kwargs['opr_type']
         conn = psycopg2.connect(database=kwargs["Database"],
                                 user=kwargs["User"],
@@ -147,12 +145,12 @@ class Infra:
             conn.close()
             return True
         elif opr_type == "select":
-            print(kwargs['sql'])
+            # print(kwargs['sql'])
             cursor.execute(kwargs['sql'])
             if kwargs['number_of_row'] == 0:
                 rows = cursor.fetchall()
                 conn.close()
-                print(rows)
+                # print(rows)
                 return rows
         else:
             return False
