@@ -4,6 +4,15 @@ from lfcomlib.Jessica import psycopg2
 
 class Infra:
 
+    def __init__(self):
+        self.db_opr_type = {
+        "close": "close",
+        "insert": "insert",
+        "close_commit": "close_commit",
+        "update": "update",
+        "select": "select"
+    }
+
     def open_dir(self, selected_dir):
         os.system("explorer %s" % DaPr.ReplaceDirSlash(selected_dir))
 
@@ -82,25 +91,17 @@ class Infra:
             # 返回 Main.Flow(sel返回到方法
             return False
 
-    def db_entry(self, **kwargs):
-        from serverConfig.init import globalSetting
-        db_name = globalSetting.db_name
-        db_config = globalSetting.db_config
+    def db_entry(self, db=None, db_name=None, **kwargs):
         if db_name == "maria":
-            try:
-                db_config["SQL"] = kwargs['sql']
-                db_config["opr_type"] = kwargs['opr_type']
-                db_config["NumberOfRow"] = kwargs['number_of_row']
-                return self.maria_db(**db_config)
-            except Exception as e:
-                print(e)
-                return False
+            # try:
+            #     return self.maria_db(db, **kwargs)
+            # except Exception as e:
+            #     print(e)
+            #     return False
+            return self.maria_db(db, **kwargs)
         elif db_name == "postgres":
             try:
-                db_config["sql"] = kwargs['sql']
-                db_config["opr_type"] = kwargs['opr_type']
-                db_config["NumberOfRow"] = kwargs['number_of_row']
-                return self.postgres_db(**db_config)
+                return self.postgres_db(db, **kwargs)
             except Exception as e:
                 print(e)
                 return False
@@ -113,84 +114,98 @@ class Infra:
             mysql+pymysql://root:hch123@127.0.0.1/lfnova?charset=utf8mb4
             '''
             uri = "{}://{}:{}@{}/{}?charset={}".format(db_config['sql_alchemy'],
-                       db_config['User'],
-                       db_config['Password'],
-                       db_config['Host'],
-                       db_config['Database'],
-                       db_config['CharSet'])
+                                                       db_config['User'],
+                                                       db_config['Password'],
+                                                       db_config['Host'],
+                                                       db_config['Database'],
+                                                       db_config['CharSet'])
             return uri
         elif db_name == "postgres":
             '''
             postgresql+psycopg2://user:password@host/dbname
             '''
             uri = "{}://{}:{}@{}/{}".format(db_config['sql_alchemy'],
-                       db_config['User'],
-                       db_config['Password'],
-                       db_config['Host'],
-                       db_config['Database']
-                       )
+                                            db_config['User'],
+                                            db_config['Password'],
+                                            db_config['Host'],
+                                            db_config['Database']
+                                            )
             return uri
 
-    def postgres_db(self, **kwargs):
-        opr_type = kwargs['opr_type']
-        conn = psycopg2.connect(database=kwargs["Database"],
-                                user=kwargs["User"],
-                                password=kwargs["Password"],
-                                host=kwargs["Host"],
-                                port=kwargs["Port"])
-        cursor = conn.cursor()
-        if opr_type == "update" or opr_type == "insert":
-            cursor.execute(kwargs['sql'])
-            conn.commit()
-            conn.close()
+    def postgres_db(self, db=None, **kwargs):
+        if db is None:
+            db_conn = psycopg2.connect(database=kwargs['Database'],
+                                       user=kwargs['User'],
+                                       password=kwargs['Password'],
+                                       host=kwargs['Host'],
+                                       port=kwargs['Port'])
+            return db_conn
+        opr_type = kwargs["opr_type"]
+        sql = kwargs['sql']
+        number_of_row = kwargs['number_of_row']
+        cursor = db.cursor()
+        if opr_type == "update" or opr_type == "update":
+            cursor.execute(sql)
+            db.commit()
+            db.close()
             return True
         elif opr_type == "select":
             # print(kwargs['sql'])
-            cursor.execute(kwargs['sql'])
-            if kwargs['number_of_row'] == 0:
+            cursor.execute(sql)
+            if number_of_row == 0:
                 rows = cursor.fetchall()
-                conn.close()
+                db.close()
                 # print(rows)
                 return rows
         else:
             return False
 
-    def maria_db(self, **kwargs):
-        try:
-            # 连接MySQL数据库
-            db = pymysql.connect(host=kwargs["Host"],
-                                 port=kwargs["Port"],
-                                 user=kwargs["User"],
-                                 password=kwargs["Password"],
-                                 db=kwargs["Database"],
-                                 charset=kwargs["CharSet"],
-                                 cursorclass=pymysql.cursors.DictCursor)
-            # 通过cursor创建游标
-            db_cursor = db.cursor()
-            # 执行数据查询
-            db_cursor.execute(kwargs["SQL"])
-            if kwargs["opr_type"] == "select":
-                db_cursor.execute(kwargs["SQL"])
-                if kwargs["NumberOfRow"] == 1:
-                    raw_data = db_cursor.fetchone()
-                    db.close()
-                    return raw_data
-                if kwargs["NumberOfRow"] > 0:
-                    raw_data = db_cursor.fetchmany(kwargs["NumberOfRow"])
-                    db.close()
-                    return raw_data
-                else:
-                    raw_data = db_cursor.fetchall()
-                    db.close()
-                    return raw_data
+    def maria_db(self, db=None, **kwargs):
+        # try:
+        # 连接MySQL数据库
+        if db is None:
+            db_conn = pymysql.connect(host=kwargs['Host'],
+                                      port=kwargs['Port'],
+                                      user=kwargs['User'],
+                                      password=kwargs['Password'],
+                                      db=kwargs['Database'],
+                                      charset=kwargs['CharSet'],
+                                      cursorclass=pymysql.cursors.DictCursor)
+            return db_conn
+        sql = kwargs['sql']
+        opr_type = kwargs['opr_type']
+        number_of_row = kwargs['number_of_row']
+        # 通过cursor创建游标
+        db_cursor = db.cursor()
+        # 执行数据查询
+        db_cursor.execute(sql)
+        if opr_type == "select":
+            db_cursor.execute(sql)
+            if number_of_row == 1:
+                raw_data = db_cursor.fetchone()
+                return raw_data
+            if number_of_row > 0:
+                raw_data = db_cursor.fetchmany(number_of_row)
+                return raw_data
             else:
-                db_cursor.execute(kwargs["SQL"])
-                db.commit()
-                db.close()
-                return True
-        except Exception as e:
-            print(e)
+                raw_data = db_cursor.fetchall()
+                return raw_data
+        elif opr_type == "close":
+            db.close()
+            return True
+        elif opr_type == "close_commit":
+            db.commit()
+            db.close()
+            return True
+        elif opr_type == "update" and opr_type == "insert":
+            db_cursor.execute(sql)
+            db.commit()
+            return True
+        else:
             return False
+        # except Exception as e:
+        #     print(e)
+        #     return False
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):
 

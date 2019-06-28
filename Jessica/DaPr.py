@@ -1,33 +1,37 @@
 from lfcomlib.Jessica import os, time, datetime, reduce
 
 
+class Dict(dict):
+    __setattr__ = dict.__setitem__
+    __getattr__ = dict.__getitem__
+
+
 class DaPr:
 
     def find_diff_value_from_two_dicts(self, type, Origi, Modified):
         if type in ['dict', 'Dict']:
-            Diff = {}
+            diff = {}
             for Key, Value in Origi.items():
                 try:
                     if Modified[Key] == Value:
                         pass
                     else:
-                        Diff[Key] = Value
+                        diff[Key] = Value
                 except:
                     pass
-            return Diff
+            return diff
 
     def keep_one(self, rawdata):
-        KeepOne = []
-        Package = []
+        keep_one = []
+        package = []
         for Data in rawdata:
-            if Data not in KeepOne:
-                KeepOne.append(Data)
-                Package.append({'value': Data, 'label': Data})
+            if Data not in keep_one:
+                keep_one.append(Data)
+                package.append({'value': Data, 'label': Data})
             else:
                 pass
-        KeepOne.clear()
-        print(Package)
-        return Package
+        keep_one.clear()
+        return package
 
     def FindNewestFileInWindows(self, Dir, FileExtensionList):
         FileList = []
@@ -187,3 +191,11 @@ class DaPr:
             'second': int(float(time_diff_r2[2])),
         }
         return dt_set
+
+    def dict_to_object(self, dict_obj):
+        if not isinstance(dict_obj, dict):
+            return dict_obj
+        inst = Dict()
+        for k, v in dict_obj.items():
+            inst[k] = self.dict_to_object(v)
+        return inst
