@@ -92,7 +92,7 @@ class Infra:
             return False
 
     def db_entry(self, db=None, db_name=None, **kwargs):
-        if db_name == "maria":
+        if db_name in ["maria", "mysql"]:
             # try:
             #     return self.maria_db(db, **kwargs)
             # except Exception as e:
@@ -161,51 +161,51 @@ class Infra:
             return False
 
     def maria_db(self, db=None, **kwargs):
-        # try:
+        try:
         # 连接MySQL数据库
-        if db is None:
-            db_conn = pymysql.connect(host=kwargs['Host'],
-                                      port=kwargs['Port'],
-                                      user=kwargs['User'],
-                                      password=kwargs['Password'],
-                                      db=kwargs['Database'],
-                                      charset=kwargs['CharSet'],
-                                      cursorclass=pymysql.cursors.DictCursor)
-            return db_conn
-        sql = kwargs['sql']
-        opr_type = kwargs['opr_type']
-        number_of_row = kwargs['number_of_row']
-        # 通过cursor创建游标
-        db_cursor = db.cursor()
-        # 执行数据查询
-        db_cursor.execute(sql)
-        if opr_type == "select":
+            if db is None:
+                db_conn = pymysql.connect(host=kwargs['Host'],
+                                          port=kwargs['Port'],
+                                          user=kwargs['User'],
+                                          password=kwargs['Password'],
+                                          db=kwargs['Database'],
+                                          charset=kwargs['CharSet'],
+                                          cursorclass=pymysql.cursors.DictCursor)
+                return db_conn
+            sql = kwargs['sql']
+            opr_type = kwargs['opr_type']
+            number_of_row = kwargs['number_of_row']
+            # 通过cursor创建游标
+            db_cursor = db.cursor()
+            # 执行数据查询
             db_cursor.execute(sql)
-            if number_of_row == 1:
-                raw_data = db_cursor.fetchone()
-                return raw_data
-            if number_of_row > 0:
-                raw_data = db_cursor.fetchmany(number_of_row)
-                return raw_data
+            if opr_type == "select":
+                db_cursor.execute(sql)
+                if number_of_row == 1:
+                    raw_data = db_cursor.fetchone()
+                    return raw_data
+                if number_of_row > 0:
+                    raw_data = db_cursor.fetchmany(number_of_row)
+                    return raw_data
+                else:
+                    raw_data = db_cursor.fetchall()
+                    return raw_data
+            elif opr_type == "close":
+                db.close()
+                return True
+            elif opr_type == "close_commit":
+                db.commit()
+                db.close()
+                return True
+            elif opr_type in ["update", "insert"]:
+                db_cursor.execute(sql)
+                db.commit()
+                return True
             else:
-                raw_data = db_cursor.fetchall()
-                return raw_data
-        elif opr_type == "close":
-            db.close()
-            return True
-        elif opr_type == "close_commit":
-            db.commit()
-            db.close()
-            return True
-        elif opr_type == "update" and opr_type == "insert":
-            db_cursor.execute(sql)
-            db.commit()
-            return True
-        else:
+                return False
+        except Exception as e:
+            print(e)
             return False
-        # except Exception as e:
-        #     print(e)
-        #     return False
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):
 
