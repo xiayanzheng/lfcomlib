@@ -113,7 +113,7 @@ class Infra:
             '''
             mysql+pymysql://root:hch123@127.0.0.1/lfnova:3306?charset=utf8mb4
             '''
-            uri = "{}://{}:{}@{}:{}/{}?charset={}".format(db_config['sql_alchemy'],
+            uri = "{}://{}:{}@{}:{}/{}?charset={}".format(db_config['db_sql_alchemy'],
                                                        db_config['db_user'],
                                                        db_config['db_pass'],
                                                        db_config['db_host'],
@@ -125,7 +125,7 @@ class Infra:
             '''
             postgresql+psycopg2://user:password@host:5230/dbname
             '''
-            uri = "{}://{}:{}@{}:{}/{}".format(db_config['sql_alchemy'],
+            uri = "{}://{}:{}@{}:{}/{}".format(db_config['db_sql_alchemy'],
                                             db_config['db_user'],
                                             db_config['db_pass'],
                                             db_config['db_host'],
