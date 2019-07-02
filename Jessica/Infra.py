@@ -91,15 +91,15 @@ class Infra:
             # 返回 Main.Flow(sel返回到方法
             return False
 
-    def db_entry(self, db=None, db_name=None, **kwargs):
-        if db_name in ["maria", "mysql"]:
+    def db_entry(self, db=None, db_type=None, **kwargs):
+        if db_type in ["maria", "mysql"]:
             # try:
             #     return self.maria_db(db, **kwargs)
             # except Exception as e:
             #     print(e)
             #     return False
             return self.maria_db(db, **kwargs)
-        elif db_name == "postgres":
+        elif db_type == "postgres":
             try:
                 return self.postgres_db(db, **kwargs)
             except Exception as e:
@@ -107,38 +107,39 @@ class Infra:
                 return False
 
     def sqlalcheny_uri_maker(self, **kwargs):
-        db_name = kwargs['db_name']
+        db_type = kwargs['db_type']
         db_config = kwargs['db_config']
-        if db_name in ["maria", "mysql"]:
+        if db_type in ["maria", "mysql"]:
             '''
-            mysql+pymysql://root:hch123@127.0.0.1/lfnova?charset=utf8mb4
+            mysql+pymysql://root:hch123@127.0.0.1/lfnova:3306?charset=utf8mb4
             '''
-            uri = "{}://{}:{}@{}/{}?charset={}".format(db_config['sql_alchemy'],
-                                                       db_config['User'],
-                                                       db_config['Password'],
-                                                       db_config['Host'],
-                                                       db_config['Database'],
-                                                       db_config['CharSet'])
+            uri = "{}://{}:{}@{}:{}/{}?charset={}".format(db_config['sql_alchemy'],
+                                                       db_config['db_user'],
+                                                       db_config['db_pass'],
+                                                       db_config['db_host'],
+                                                       db_config['db_port'],
+                                                       db_config['db_name'],
+                                                       db_config['db_char'])
             return uri
-        elif db_name == "postgres":
+        elif db_type == "postgres":
             '''
-            postgresql+psycopg2://user:password@host/dbname
+            postgresql+psycopg2://user:password@host:5230/dbname
             '''
-            uri = "{}://{}:{}@{}/{}".format(db_config['sql_alchemy'],
-                                            db_config['User'],
-                                            db_config['Password'],
-                                            db_config['Host'],
-                                            db_config['Database']
-                                            )
+            uri = "{}://{}:{}@{}:{}/{}".format(db_config['sql_alchemy'],
+                                            db_config['db_user'],
+                                            db_config['db_pass'],
+                                            db_config['db_host'],
+                                            db_config['db_port'],
+                                            db_config['db_name'])
             return uri
 
     def postgres_db(self, db=None, **kwargs):
         if db is None:
-            db_conn = psycopg2.connect(database=kwargs['Database'],
-                                       user=kwargs['User'],
-                                       password=kwargs['Password'],
-                                       host=kwargs['Host'],
-                                       port=kwargs['Port'])
+            db_conn = psycopg2.connect(database=kwargs['db_name'],
+                                       user=kwargs['db_user'],
+                                       password=kwargs['db_pass'],
+                                       host=kwargs['db_host'],
+                                       port=kwargs['db_port'])
             return db_conn
         opr_type = kwargs["opr_type"]
         sql = kwargs['sql']
@@ -164,12 +165,12 @@ class Infra:
         try:
         # 连接MySQL数据库
             if db is None:
-                db_conn = pymysql.connect(host=kwargs['Host'],
-                                          port=kwargs['Port'],
-                                          user=kwargs['User'],
-                                          password=kwargs['Password'],
-                                          db=kwargs['Database'],
-                                          charset=kwargs['CharSet'],
+                db_conn = pymysql.connect(host=kwargs['db_host'],
+                                          port=kwargs['db_port'],
+                                          user=kwargs['db_user'],
+                                          password=kwargs['db_pass'],
+                                          db=kwargs['db_name'],
+                                          charset=kwargs['db_char'],
                                           cursorclass=pymysql.cursors.DictCursor)
                 return db_conn
             sql = kwargs['sql']
