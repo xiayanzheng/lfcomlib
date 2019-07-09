@@ -6,12 +6,13 @@ class Infra:
 
     def __init__(self):
         self.db_opr_type = {
-        "close": "close",
-        "insert": "insert",
-        "close_commit": "close_commit",
-        "update": "update",
-        "select": "select"
-    }
+            "close": "close",
+            "insert": "insert",
+            "close_commit": "close_commit",
+            "update": "update",
+            "select": "select"
+        }
+        self.db_cfg_save = None
 
     def open_dir(self, selected_dir):
         os.system("explorer %s" % DaPr.ReplaceDirSlash(selected_dir))
@@ -93,18 +94,20 @@ class Infra:
 
     def db_entry(self, db=None, db_type=None, **kwargs):
         if db_type in ["maria", "mysql"]:
-            # try:
-            #     return self.maria_db(db, **kwargs)
-            # except Exception as e:
-            #     print(e)
-            #     return False
-            return self.maria_db(db, **kwargs)
+            if db is None:
+                self.db_cfg_save = kwargs
+            result = self.maria_db(db, **kwargs)
+            counter = 0
+            while result in ['conn_lost'] and counter < 10:
+                db = self.maria_db(db=None, **self.db_cfg_save)
+                result = self.maria_db(db, **kwargs)
+                counter += 1
+                if counter == 10:
+                    print("DB connection lost")
+                    break
+            return result
         elif db_type == "postgres":
-            try:
-                return self.postgres_db(db, **kwargs)
-            except Exception as e:
-                print(e)
-                return False
+            return self.postgres_db(db, **kwargs)
 
     def sqlalcheny_uri_maker(self, **kwargs):
         db_type = kwargs['db_type']
@@ -114,23 +117,23 @@ class Infra:
             mysql+pymysql://root:hch123@127.0.0.1/lfnova:3306?charset=utf8mb4
             '''
             uri = "{}://{}:{}@{}:{}/{}?charset={}".format(db_config['db_sql_alchemy'],
-                                                       db_config['db_user'],
-                                                       db_config['db_pass'],
-                                                       db_config['db_host'],
-                                                       db_config['db_port'],
-                                                       db_config['db_name'],
-                                                       db_config['db_char'])
+                                                          db_config['db_user'],
+                                                          db_config['db_pass'],
+                                                          db_config['db_host'],
+                                                          db_config['db_port'],
+                                                          db_config['db_name'],
+                                                          db_config['db_char'])
             return uri
         elif db_type == "postgres":
             '''
             postgresql+psycopg2://user:password@host:5230/dbname
             '''
             uri = "{}://{}:{}@{}:{}/{}".format(db_config['db_sql_alchemy'],
-                                            db_config['db_user'],
-                                            db_config['db_pass'],
-                                            db_config['db_host'],
-                                            db_config['db_port'],
-                                            db_config['db_name'])
+                                               db_config['db_user'],
+                                               db_config['db_pass'],
+                                               db_config['db_host'],
+                                               db_config['db_port'],
+                                               db_config['db_name'])
             return uri
 
     def postgres_db(self, db=None, **kwargs):
@@ -163,7 +166,7 @@ class Infra:
 
     def maria_db(self, db=None, **kwargs):
         try:
-        # 连接MySQL数据库
+            # 连接MySQL数据库
             if db is None:
                 db_conn = pymysql.connect(host=kwargs['db_host'],
                                           port=kwargs['db_port'],
@@ -173,13 +176,12 @@ class Infra:
                                           charset=kwargs['db_char'],
                                           cursorclass=pymysql.cursors.DictCursor)
                 return db_conn
+            # print(db)
             sql = kwargs['sql']
             opr_type = kwargs['opr_type']
             number_of_row = kwargs['number_of_row']
             # 通过cursor创建游标
             db_cursor = db.cursor()
-            # 执行数据查询
-            db_cursor.execute(sql)
             if opr_type == "select":
                 db_cursor.execute(sql)
                 if number_of_row == 1:
@@ -205,8 +207,10 @@ class Infra:
             else:
                 return False
         except Exception as e:
-            print(e)
-            return False
+            if e.args[0] == "(0, '')":
+                return "conn_lost"
+            else:
+                return False
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):
 
