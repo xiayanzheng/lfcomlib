@@ -204,6 +204,9 @@ class Infra:
                 db_cursor.execute(sql)
                 db.commit()
                 return True
+            elif opr_type in ["update_nocommit", "insert_nocommit"]:
+                db_cursor.execute(sql)
+                return True
             else:
                 return False
         except Exception as e:
