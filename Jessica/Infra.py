@@ -1,5 +1,5 @@
 from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg
-from lfcomlib.Jessica import psycopg2
+from lfcomlib.Jessica import psycopg2, shutil
 
 
 class Infra:
@@ -13,6 +13,18 @@ class Infra:
             "select": "select"
         }
         self.db_cfg_save = None
+
+    def copy_ff(self, from_, to_):
+        obj = from_
+        if os.path.isdir(obj):
+            try:
+                shutil.copytree(from_, to_)
+            finally:
+                pass
+            print("Folder {} Copied".format(obj))
+        if os.path.isfile(obj):
+            shutil.copy(from_, to_)
+            print("File {} Copied".format(obj))
 
     def open_dir(self, selected_dir):
         os.system("explorer %s" % DaPr.ReplaceDirSlash(selected_dir))

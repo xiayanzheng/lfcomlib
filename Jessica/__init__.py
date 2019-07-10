@@ -1,6 +1,7 @@
 import requests, os, time, csv, sqlite3, subprocess, configparser, pymysql, xlrd, codecs, datetime, psycopg2
 import random
 import copy
+import shutil
 import urllib.parse as parse
 from xlutils.copy import copy as xluCopy
 from functools import reduce
