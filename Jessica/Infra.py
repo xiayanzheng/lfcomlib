@@ -14,16 +14,45 @@ class Infra:
         }
         self.db_cfg_save = None
 
+    def rename_ff(self, from_, to_):
+        obj = from_
+        if os.path.isdir(obj):
+            try:
+                os.rename(obj, to_)
+            finally:
+                pass
+            print("Folder {} renamed to {}".format(obj,to_))
+        if os.path.isfile(obj):
+            os.rename(obj, to_)
+            print("File {} renamed to {}".format(obj,to_))
+
     def copy_ff(self, from_, to_):
         obj = from_
         if os.path.isdir(obj):
             try:
-                shutil.copytree(from_, to_)
+                shutil.copytree(obj, to_)
             finally:
                 pass
             print("Folder {} Copied".format(obj))
         if os.path.isfile(obj):
-            shutil.copy(from_, to_)
+            shutil.copy(obj, to_)
+            print("File {} Copied".format(obj))
+
+    def copy_ff_with_del(self, from_, to_):
+        obj = from_
+        if os.path.isdir(obj):
+            if os.path.exists(to_):
+                try:
+                    shutil.rmtree(to_)
+                finally:
+                    pass
+            try:
+                shutil.copytree(obj, to_)
+            finally:
+                pass
+            print("Folder {} Copied".format(obj))
+        if os.path.isfile(obj):
+            shutil.copy(obj, to_)
             print("File {} Copied".format(obj))
 
     def open_dir(self, selected_dir):
