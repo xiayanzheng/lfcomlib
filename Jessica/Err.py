@@ -5,6 +5,7 @@ from logging.handlers import RotatingFileHandler
 
 def logger(**kwargs):
     def decorate(func):
+        log_level = logging.DEBUG
         level = kwargs['log_level']
         name = None
         message = None
@@ -20,8 +21,6 @@ def logger(**kwargs):
         }
         if level in log_level_dict:
             log_level = log_level_dict[level]
-        else:
-            log_level = logging.DEBUG
         log_name = name if name else func.__module__
         log_msg = message if message else func.__name__
         log_file = "{}{}".format(log_path, '.log')
