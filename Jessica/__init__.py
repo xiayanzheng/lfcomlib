@@ -10,6 +10,7 @@ from lfcomlib.Jessica import DaPr
 from lfcomlib.Jessica import Msg
 from lfcomlib.Jessica import Infra
 from lfcomlib.Jessica import Utl
+from lfcomlib.Jessica import Err
 
 Utl = Utl.Utl()
 DaPr = DaPr.DaPr()

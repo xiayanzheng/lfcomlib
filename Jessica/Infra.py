@@ -21,10 +21,17 @@ class Infra:
                 os.rename(obj, to_)
             finally:
                 pass
-            print("Folder {} renamed to {}".format(obj,to_))
+            print("Folder {} renamed to {}".format(obj, to_))
         if os.path.isfile(obj):
             os.rename(obj, to_)
-            print("File {} renamed to {}".format(obj,to_))
+            print("File {} renamed to {}".format(obj, to_))
+
+    def dir_check(self, dir):
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+            return dir
+        else:
+            return dir
 
     def copy_ff(self, from_, to_):
         obj = from_
