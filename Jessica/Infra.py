@@ -33,6 +33,13 @@ class Infra:
         else:
             return dir
 
+    def get_folder_size(self, folder):
+        folder_size = 0
+        for Root, Dirs, Files in os.walk(folder):
+            for File in Files:
+                folder_size += os.path.getsize(os.path.join(Root, File))
+        return folder_size
+
     def copy_ff(self, from_, to_):
         obj = from_
         if os.path.isdir(obj):
