@@ -8,6 +8,12 @@ class Dict(dict):
 
 class DaPr:
 
+    def tuple_list_to_list(self, tuple_list):
+        list = []
+        for tuple in tuple_list:
+            list.append(tuple[0])
+        return list
+
     def find_diff_value_from_two_dicts(self, type, Origi, Modified):
         if type in ['dict', 'Dict']:
             diff = {}
