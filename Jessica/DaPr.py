@@ -57,6 +57,12 @@ class DaPr:
     def ReplaceDirSymbol(self, Dir, ReplaceFrom, ReplaceTo):
         return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(Dir.split(ReplaceFrom), ReplaceTo))
 
+    def replace_symbol(self, str, ReplaceFrom, ReplaceTo):
+        return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(str.split(ReplaceFrom), ReplaceTo))
+
+    def insert_value_to_list_and_merge(self,list,value):
+        return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(list, value))
+
     def RenameDictKeys(self, RawData, ReplaceKeyMap):
         for Key in RawData:
             for RDKey, RDVaule in ReplaceKeyMap.items():
