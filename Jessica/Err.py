@@ -34,6 +34,8 @@ def logger(**kwargs):
         log.setLevel(log_level)
         log.addHandler(handler)
 
+        logging.basicConfig(filename=log_file, format=log_format, level=log_level)
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             return func(*args, **kwargs)
