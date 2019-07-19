@@ -43,9 +43,10 @@ class Infra:
     def copy_ff(self, from_, to_):
         obj = from_
         if os.path.isdir(obj):
-            try:
+            if not os.path.exists(to_):
                 shutil.copytree(obj, to_)
-            finally:
+            else:
+                print('Folder exists')
                 pass
             print("Folder {} Copied".format(obj))
         if os.path.isfile(obj):
@@ -268,6 +269,7 @@ class Infra:
             if e.args[0] == "(0, '')":
                 return "conn_lost"
             else:
+                print(e)
                 return False
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):

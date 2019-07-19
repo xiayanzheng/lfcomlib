@@ -26,20 +26,24 @@ def logger(**kwargs):
         log_file = "{}{}".format(log_path, '.log')
         handler = RotatingFileHandler(log_file, mode='a', maxBytes=int(log_size) * 1024 * 1024,
                                          backupCount=int(log_revision), encoding=None, delay=0)
-        log_formatter = logging.Formatter(log_format)
-        handler.setFormatter(log_formatter)
-        handler.setLevel(log_level)
 
         log = logging.getLogger(log_name)
-        log.setLevel(log_level)
-        log.addHandler(handler)
-
+        if len(log.handlers) == 0:
+            log_formatter = logging.Formatter(log_format)
+            handler.setFormatter(log_formatter)
+            handler.setLevel(log_level)
+            log.addHandler(handler)
         logging.basicConfig(filename=log_file, format=log_format, level=log_level)
-
         @wraps(func)
         def wrapper(*args, **kwargs):
-            return func(*args, **kwargs)
-        log.log(log_level, log_msg)
+            try:
+                if level == logging.DEBUG:
+                    log.log(log_level, log_msg)
+                return func(*args, **kwargs)
+            except Exception as e:
+                print(e)
+                log_msg = log_msg + e
+                log.log(log_level, log_msg)
         return wrapper
 
     return decorate
