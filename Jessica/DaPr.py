@@ -1,12 +1,26 @@
 from lfcomlib.Jessica import os, time, datetime, reduce
 
 
-class Dict(dict):
-    __setattr__ = dict.__setitem__
-    __getattr__ = dict.__getitem__
-
-
 class DaPr:
+
+    def find_path_x(self, init_path,target, max_layer=30):
+        pre = '..'
+        p = [init_path]
+        f = os.path.abspath(os.path.join(*p))
+        rr = os.path.join(f, target)
+        sk = os.path.exists(rr)
+        counter = 0
+        while sk is not True and counter < max_layer:
+            p.append(pre)
+            f = os.path.abspath(os.path.join(*p))
+            rr = os.path.abspath(os.path.join(f, target))
+            sk = os.path.exists(rr)
+            counter += 1
+            if counter == max_layer:
+                break
+        if counter == max_layer:
+            return None
+        return rr
 
     def tuple_list_to_list(self, tuple_list):
         list = []
@@ -60,7 +74,7 @@ class DaPr:
     def replace_symbol(self, str, ReplaceFrom, ReplaceTo):
         return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(str.split(ReplaceFrom), ReplaceTo))
 
-    def insert_value_to_list_and_merge(self,list,value):
+    def insert_value_to_list_and_merge(self, list, value):
         return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(list, value))
 
     def RenameDictKeys(self, RawData, ReplaceKeyMap):
@@ -203,11 +217,3 @@ class DaPr:
             'second': int(float(time_diff_r2[2])),
         }
         return dt_set
-
-    def dict_to_object(self, dict_obj):
-        if not isinstance(dict_obj, dict):
-            return dict_obj
-        inst = Dict()
-        for k, v in dict_obj.items():
-            inst[k] = self.dict_to_object(v)
-        return inst

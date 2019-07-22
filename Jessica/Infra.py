@@ -1,5 +1,6 @@
 from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg
 from lfcomlib.Jessica import psycopg2, shutil
+from lfcomlib.Jessica.Err import logger_i
 
 
 class Infra:
@@ -13,6 +14,7 @@ class Infra:
             "select": "select"
         }
         self.db_cfg_save = None
+        self.log_cfg = {}
 
     def rename_ff(self, from_, to_):
         obj = from_
@@ -269,7 +271,7 @@ class Infra:
             if e.args[0] == "(0, '')":
                 return "conn_lost"
             else:
-                print(e)
+                logger_i("ERROR", e, **self.log_cfg)
                 return False
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):
