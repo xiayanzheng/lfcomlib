@@ -1,6 +1,11 @@
 from lfcomlib.Jessica import os, time, datetime, reduce
 
 
+class Dict(dict):
+    __setattr__ = dict.__setitem__
+    __getattr__ = dict.__getitem__
+
+
 class DaPr:
 
     def find_path_x(self, init_path,target, max_layer=30):
@@ -217,3 +222,11 @@ class DaPr:
             'second': int(float(time_diff_r2[2])),
         }
         return dt_set
+
+    def dict_to_object(self, dict_obj):
+        if not isinstance(dict_obj, dict):
+            return dict_obj
+        inst = Dict()
+        for k, v in dict_obj.items():
+            inst[k] = self.dict_to_object(v)
+        return inst
