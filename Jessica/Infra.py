@@ -339,7 +339,7 @@ class Infra:
             db_cursor.execute(sql, data)
             db.commit()
 
-    def excute_bat(self, bat_file_path, bat_file):
+    def execute_bat(self, bat_file_path, bat_file):
         bat_file_path = os.path.join(bat_file_path, bat_file)
         exe_bat = subprocess.Popen("cmd.exe /c" + "%s abc" % bat_file_path, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -348,7 +348,7 @@ class Infra:
             # print(cur_line.decode('GBK'))
             cur_line = exe_bat.stdout.readline()
         exe_bat.wait()
-        # print(excute_bat.returncode)
+        # print(execute_bat.returncode)
         exe_bat.terminate()
 
     def wcmd(self, command):
@@ -359,7 +359,7 @@ class Infra:
             # print(cur_line.decode('GBK'))
             cur_line = excuet_bat.stdout.readline()
         excuet_bat.wait()
-        # print(excute_bat.returncode)
+        # print(execute_bat.returncode)
         excuet_bat.terminate()
 
     def read_ini(self, config_file, section, key):

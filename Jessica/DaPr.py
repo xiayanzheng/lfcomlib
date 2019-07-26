@@ -8,7 +8,8 @@ class Dict(dict):
 
 class DaPr:
 
-    def find_path_x(self, init_path,target, max_layer=30):
+    @staticmethod
+    def find_path_forward(init_path, target, max_layer=30):
         pre = '..'
         p = [init_path]
         f = os.path.abspath(os.path.join(*p))
