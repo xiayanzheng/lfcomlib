@@ -80,6 +80,20 @@ class DaPr:
     def replace_symbol(self, str, ReplaceFrom, ReplaceTo):
         return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(str.split(ReplaceFrom), ReplaceTo))
 
+    def clean_list(self, str_i, split_str, *args):
+        raw = str_i.split(split_str)
+        new = []
+        for x in raw:
+            if x not in args:
+                new.append(x)
+        return new
+
+    def gen_path(self, drive, list_s):
+        drive_l = [drive]
+        list_n = drive_l + list_s
+        path = os.path.join(*list_n)
+        return path
+
     def insert_value_to_list_and_merge(self, list, value):
         return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(list, value))
 

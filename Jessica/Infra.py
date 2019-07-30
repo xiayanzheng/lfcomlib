@@ -16,7 +16,7 @@ class Infra:
         self.db_cfg_save = None
         self.log_cfg = {}
 
-    def rename_ff(self, from_, to_):
+    def rename_ff(self, from_, to_, show_msg=True):
         obj = from_
         if os.path.isdir(obj):
             try:
@@ -28,7 +28,7 @@ class Infra:
             os.rename(obj, to_)
             print("File {} renamed to {}".format(obj, to_))
 
-    def remove_ff(self, ff):
+    def remove_ff(self, ff, show_msg=True):
         if os.path.exists(ff):
             if os.path.isdir(ff):
                 shutil.rmtree(ff)
@@ -54,35 +54,36 @@ class Infra:
                 folder_size += os.path.getsize(os.path.join(Root, File))
         return folder_size
 
-    def copy_ff(self, from_, to_):
-        obj = from_
-        if os.path.isdir(obj):
+    def copy_ff(self, from_, to_, show_msg=True):
+        print(from_,to_)
+        if os.path.isdir(from_):
             if not os.path.exists(to_):
-                shutil.copytree(obj, to_)
+                shutil.copytree(from_, to_)
             else:
                 print('Folder exists')
                 pass
-            print("Folder {} Copied".format(obj))
-        if os.path.isfile(obj):
-            shutil.copy(obj, to_)
-            print("File {} Copied".format(obj))
+            print("Folder {} Copied".format(from_))
+        else:
+            to_dir = os.path.split(to_)[0]
+            print(to_dir)
+            if not os.path.exists(to_dir):
+                os.makedirs(to_dir)
+            shutil.copy(from_, to_)
+        if show_msg:
+            print("++++++++++++++++")
+            print("From:", from_)
+            print("To:", to_)
+            print("File {} Copied".format(from_))
+            print("++++++++++++++++")
 
-    def copy_ff_with_del(self, from_, to_):
-        obj = from_
-        if os.path.isdir(obj):
-            if os.path.exists(to_):
-                try:
-                    shutil.rmtree(to_)
-                finally:
-                    pass
-            try:
-                shutil.copytree(obj, to_)
-            finally:
-                pass
-            print("Folder {} Copied".format(obj))
-        if os.path.isfile(obj):
-            shutil.copy(obj, to_)
-            print("File {} Copied".format(obj))
+    def copy_ff_with_del(self, from_, to_, show_msg=True):
+        if os.path.exists(to_):
+            if os.path.isdir(to_):
+                print(to_)
+                shutil.rmtree(to_)
+            else:
+                os.remove(to_)
+        self.copy_ff(from_, to_, show_msg)
 
     def open_dir(self, selected_dir):
         os.system("explorer %s" % DaPr.ReplaceDirSlash(selected_dir))
