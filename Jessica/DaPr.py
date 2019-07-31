@@ -8,6 +8,32 @@ class Dict(dict):
 
 class DaPr:
 
+    @staticmethod
+    def find_path_forward(init_path, target, max_layer=30):
+        pre = '..'
+        p = [init_path]
+        f = os.path.abspath(os.path.join(*p))
+        rr = os.path.join(f, target)
+        sk = os.path.exists(rr)
+        counter = 0
+        while sk is not True and counter < max_layer:
+            p.append(pre)
+            f = os.path.abspath(os.path.join(*p))
+            rr = os.path.abspath(os.path.join(f, target))
+            sk = os.path.exists(rr)
+            counter += 1
+            if counter == max_layer:
+                break
+        if counter == max_layer:
+            return None
+        return rr
+
+    def tuple_list_to_list(self, tuple_list):
+        list = []
+        for tuple in tuple_list:
+            list.append(tuple[0])
+        return list
+
     def find_diff_value_from_two_dicts(self, type, Origi, Modified):
         if type in ['dict', 'Dict']:
             diff = {}
@@ -50,6 +76,26 @@ class DaPr:
 
     def ReplaceDirSymbol(self, Dir, ReplaceFrom, ReplaceTo):
         return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(Dir.split(ReplaceFrom), ReplaceTo))
+
+    def replace_symbol(self, str, ReplaceFrom, ReplaceTo):
+        return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(str.split(ReplaceFrom), ReplaceTo))
+
+    def clean_list(self, str_i, split_str, *args):
+        raw = str_i.split(split_str)
+        new = []
+        for x in raw:
+            if x not in args:
+                new.append(x)
+        return new
+
+    def gen_path(self, drive, list_s):
+        drive_l = [drive]
+        list_n = drive_l + list_s
+        path = os.path.join(*list_n)
+        return path
+
+    def insert_value_to_list_and_merge(self, list, value):
+        return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(list, value))
 
     def RenameDictKeys(self, RawData, ReplaceKeyMap):
         for Key in RawData:

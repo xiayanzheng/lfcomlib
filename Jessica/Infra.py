@@ -1,17 +1,89 @@
 from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg
-from lfcomlib.Jessica import psycopg2
+from lfcomlib.Jessica import psycopg2, shutil
+from lfcomlib.Jessica.Err import logger_i
 
 
 class Infra:
 
     def __init__(self):
         self.db_opr_type = {
-        "close": "close",
-        "insert": "insert",
-        "close_commit": "close_commit",
-        "update": "update",
-        "select": "select"
-    }
+            "close": "close",
+            "insert": "insert",
+            "close_commit": "close_commit",
+            "update": "update",
+            "select": "select"
+        }
+        self.db_cfg_save = None
+        self.log_cfg = {}
+
+    def rename_ff(self, from_, to_, show_msg=True):
+        obj = from_
+        if os.path.isdir(obj):
+            try:
+                os.rename(obj, to_)
+            finally:
+                pass
+            print("Folder {} renamed to {}".format(obj, to_))
+        if os.path.isfile(obj):
+            os.rename(obj, to_)
+            print("File {} renamed to {}".format(obj, to_))
+
+    def remove_ff(self, ff, show_msg=True):
+        if os.path.exists(ff):
+            if os.path.isdir(ff):
+                shutil.rmtree(ff)
+                print("Folder {} deleted".format(ff))
+            else:
+                os.remove(ff)
+                print("File {} deleted".format(ff))
+        else:
+            print("Delete Operation Filed".format(ff))
+            return False
+
+    def dir_check(self, dir):
+        if not os.path.exists(dir):
+            os.makedirs(dir)
+            return dir
+        else:
+            return dir
+
+    def get_folder_size(self, folder):
+        folder_size = 0
+        for Root, Dirs, Files in os.walk(folder):
+            for File in Files:
+                folder_size += os.path.getsize(os.path.join(Root, File))
+        return folder_size
+
+    def copy_ff(self, from_, to_, show_msg=True):
+        print(from_,to_)
+        if os.path.isdir(from_):
+            if not os.path.exists(to_):
+                shutil.copytree(from_, to_)
+            else:
+                print('Folder exists')
+                pass
+            print("Folder {} Copied".format(from_))
+        else:
+            to_dir = os.path.split(to_)[0]
+            print(to_dir)
+            if not os.path.exists(to_dir):
+                os.makedirs(to_dir)
+            shutil.copy(from_, to_)
+        if show_msg:
+            print("++++++++++++++++")
+            print("From:", from_)
+            print("To:", to_)
+            print("File {} Copied".format(from_))
+            print("++++++++++++++++")
+
+    def copy_ff_with_del(self, from_, to_, show_msg=True):
+        if os.path.exists(to_):
+            if os.path.isdir(to_):
+                print(to_)
+                shutil.rmtree(to_)
+            else:
+                os.remove(to_)
+        self.copy_ff(from_, to_, show_msg)
 
     def open_dir(self, selected_dir):
         os.system("explorer %s" % DaPr.ReplaceDirSlash(selected_dir))
@@ -93,18 +165,20 @@ class Infra:
 
     def db_entry(self, db=None, db_type=None, **kwargs):
         if db_type in ["maria", "mysql"]:
-            # try:
-            #     return self.maria_db(db, **kwargs)
-            # except Exception as e:
-            #     print(e)
-            #     return False
-            return self.maria_db(db, **kwargs)
+            if db is None:
+                self.db_cfg_save = kwargs
+            result = self.maria_db(db, **kwargs)
+            counter = 0
+            while result in ['conn_lost'] and counter < 10:
+                db = self.maria_db(db=None, **self.db_cfg_save)
+                result = self.maria_db(db, **kwargs)
+                counter += 1
+                if counter == 10:
+                    print("DB connection lost")
+                    break
+            return result
         elif db_type == "postgres":
-            try:
-                return self.postgres_db(db, **kwargs)
-            except Exception as e:
-                print(e)
-                return False
+            return self.postgres_db(db, **kwargs)
 
     def sqlalcheny_uri_maker(self, **kwargs):
         db_type = kwargs['db_type']
@@ -114,23 +188,23 @@ class Infra:
             mysql+pymysql://root:hch123@127.0.0.1/lfnova:3306?charset=utf8mb4
             '''
             uri = "{}://{}:{}@{}:{}/{}?charset={}".format(db_config['db_sql_alchemy'],
-                                                       db_config['db_user'],
-                                                       db_config['db_pass'],
-                                                       db_config['db_host'],
-                                                       db_config['db_port'],
-                                                       db_config['db_name'],
-                                                       db_config['db_char'])
+                                                          db_config['db_user'],
+                                                          db_config['db_pass'],
+                                                          db_config['db_host'],
+                                                          db_config['db_port'],
+                                                          db_config['db_name'],
+                                                          db_config['db_char'])
             return uri
         elif db_type == "postgres":
             '''
             postgresql+psycopg2://user:password@host:5230/dbname
             '''
             uri = "{}://{}:{}@{}:{}/{}".format(db_config['db_sql_alchemy'],
-                                            db_config['db_user'],
-                                            db_config['db_pass'],
-                                            db_config['db_host'],
-                                            db_config['db_port'],
-                                            db_config['db_name'])
+                                               db_config['db_user'],
+                                               db_config['db_pass'],
+                                               db_config['db_host'],
+                                               db_config['db_port'],
+                                               db_config['db_name'])
             return uri
 
     def postgres_db(self, db=None, **kwargs):
@@ -163,7 +237,7 @@ class Infra:
 
     def maria_db(self, db=None, **kwargs):
         try:
-        # 连接MySQL数据库
+            # 连接MySQL数据库
             if db is None:
                 db_conn = pymysql.connect(host=kwargs['db_host'],
                                           port=kwargs['db_port'],
@@ -173,13 +247,12 @@ class Infra:
                                           charset=kwargs['db_char'],
                                           cursorclass=pymysql.cursors.DictCursor)
                 return db_conn
+            # print(db)
             sql = kwargs['sql']
             opr_type = kwargs['opr_type']
             number_of_row = kwargs['number_of_row']
             # 通过cursor创建游标
             db_cursor = db.cursor()
-            # 执行数据查询
-            db_cursor.execute(sql)
             if opr_type == "select":
                 db_cursor.execute(sql)
                 if number_of_row == 1:
@@ -202,11 +275,17 @@ class Infra:
                 db_cursor.execute(sql)
                 db.commit()
                 return True
+            elif opr_type in ["update_nocommit", "insert_nocommit"]:
+                db_cursor.execute(sql)
+                return True
             else:
                 return False
         except Exception as e:
-            print(e)
-            return False
+            if e.args[0] == "(0, '')":
+                return "conn_lost"
+            else:
+                logger_i("ERROR", e, **self.log_cfg)
+                return False
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):
 
@@ -261,7 +340,7 @@ class Infra:
             db_cursor.execute(sql, data)
             db.commit()
 
-    def excute_bat(self, bat_file_path, bat_file):
+    def execute_bat(self, bat_file_path, bat_file):
         bat_file_path = os.path.join(bat_file_path, bat_file)
         exe_bat = subprocess.Popen("cmd.exe /c" + "%s abc" % bat_file_path, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -270,7 +349,7 @@ class Infra:
             # print(cur_line.decode('GBK'))
             cur_line = exe_bat.stdout.readline()
         exe_bat.wait()
-        # print(excute_bat.returncode)
+        # print(execute_bat.returncode)
         exe_bat.terminate()
 
     def wcmd(self, command):
@@ -281,7 +360,7 @@ class Infra:
             # print(cur_line.decode('GBK'))
             cur_line = excuet_bat.stdout.readline()
         excuet_bat.wait()
-        # print(excute_bat.returncode)
+        # print(execute_bat.returncode)
         excuet_bat.terminate()
 
     def read_ini(self, config_file, section, key):
