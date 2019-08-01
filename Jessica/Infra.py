@@ -61,7 +61,6 @@ class Infra:
             else:
                 print('Folder exists')
                 pass
-            print("Folder {} Copied".format(from_))
         else:
             to_dir = os.path.split(to_)[0]
             if not os.path.exists(to_dir):
