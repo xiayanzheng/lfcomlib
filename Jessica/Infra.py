@@ -1,4 +1,4 @@
-from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg
+from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg,sys
 from lfcomlib.Jessica import psycopg2, shutil
 from lfcomlib.Jessica.Err import logger_i
 
@@ -55,7 +55,6 @@ class Infra:
         return folder_size
 
     def copy_ff(self, from_, to_, show_msg=True):
-        print(from_,to_)
         if os.path.isdir(from_):
             if not os.path.exists(to_):
                 shutil.copytree(from_, to_)
@@ -65,7 +64,6 @@ class Infra:
             print("Folder {} Copied".format(from_))
         else:
             to_dir = os.path.split(to_)[0]
-            print(to_dir)
             if not os.path.exists(to_dir):
                 os.makedirs(to_dir)
             shutil.copy(from_, to_)
@@ -79,7 +77,6 @@ class Infra:
     def copy_ff_with_del(self, from_, to_, show_msg=True):
         if os.path.exists(to_):
             if os.path.isdir(to_):
-                print(to_)
                 shutil.rmtree(to_)
             else:
                 os.remove(to_)
@@ -284,7 +281,8 @@ class Infra:
             if e.args[0] == "(0, '')":
                 return "conn_lost"
             else:
-                logger_i("ERROR", e, **self.log_cfg)
+                err = "{},{}".format(__file__,e)
+                logger_i("ERROR", err)
                 return False
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):

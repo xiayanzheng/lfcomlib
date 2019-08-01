@@ -1,6 +1,7 @@
 from functools import wraps
 import logging
 from logging.handlers import RotatingFileHandler
+from lfcomlib.Jessica import inspect
 
 log_cfg = {}
 
@@ -59,6 +60,8 @@ def logger():
         @wraps(func)
         def wrapper(*args, **kwargs):
             log_msg_i = message if message else func.__name__
+            func_name = inspect.stack()[1][3]
+            log_msg_i = "{},{}".format(func_name,log_msg_i)
             func_obj = func(*args, **kwargs)
             if log_core is not None:
                 try:
@@ -77,6 +80,7 @@ def logger():
 
 
 def logger_i(*args):
+    fun_name = inspect.stack()[1][3]
     log_core = log_set.log_core
     log_level = logging.DEBUG
     if args[0] in log_set.log_level_dict:
@@ -84,6 +88,6 @@ def logger_i(*args):
     if log_core is None:
         log_set.make_log_core(**log_cfg)
     elif log_core is not None:
-        log_core.log(log_level, str(args[1]))
+        log_core.log(log_level, "{},{}".format(fun_name,str(args[1])))
     else:
         pass
