@@ -281,7 +281,7 @@ class Infra:
                 return "conn_lost"
             else:
                 err = "{},{}".format(__file__,e)
-                logger_i('ERROR', err)
+                logger_i("ERROR", err)
                 return False
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):
