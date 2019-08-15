@@ -14,6 +14,7 @@ class Infra:
             "select": "select"
         }
         self.db_cfg_save = None
+        self.db_instance = None
         self.log_cfg = {}
 
     def rename_ff(self, from_, to_, show_msg=True):
@@ -165,9 +166,10 @@ class Infra:
                 self.db_cfg_save = kwargs
             result = self.maria_db(db, **kwargs)
             counter = 0
+            print("re",result)
             while result in ['conn_lost'] and counter < 10:
-                db = self.maria_db(db=None, **self.db_cfg_save)
-                result = self.maria_db(db, **kwargs)
+                self.db_instance = self.maria_db(db=None, **self.db_cfg_save)
+                result = self.maria_db(self.db_instance, **kwargs)
                 counter += 1
                 if counter == 10:
                     print("DB connection lost")
@@ -277,12 +279,14 @@ class Infra:
             else:
                 return False
         except Exception as e:
-            if e.args[0] == "(0, '')":
-                return "conn_lost"
-            else:
-                err = "{},{}".format(__file__,e)
-                logger_i("ERROR", err)
-                return False
+            conn_lost = ["2013", "(0, '')"]
+            print(e.args[0])
+            for x in conn_lost:
+                if x in str(e.args[0]):
+                    return "conn_lost"
+            err = "{},{}".format(__file__, e)
+            logger_i("ERROR", err)
+            return False
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):
 
