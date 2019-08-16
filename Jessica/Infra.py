@@ -2,6 +2,7 @@ from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configpars
 from lfcomlib.Jessica import psycopg2, shutil
 from lfcomlib.Jessica.Err import logger_i
 
+
 class Infra:
 
     def __init__(self):
@@ -165,7 +166,6 @@ class Infra:
                 self.db_cfg_save = kwargs
             result = self.maria_db(db, **kwargs)
             counter = 0
-            # print("re",result)
             while result in ['conn_lost'] and counter < 10:
                 self.db_instance = self.maria_db(db=None, **self.db_cfg_save)
                 result = self.maria_db(self.db_instance, **kwargs)
@@ -260,7 +260,6 @@ class Infra:
                     return raw_data
                 else:
                     raw_data = db_cursor.fetchall()
-                    print(raw_data)
                     return raw_data
             elif opr_type == "close":
                 db.close()
@@ -280,7 +279,6 @@ class Infra:
                 return False
         except Exception as e:
             conn_lost = ["2013", "(0, '')"]
-            print("ERR",e.args[0])
             for x in conn_lost:
                 if x in str(e.args[0]):
                     return "conn_lost"
