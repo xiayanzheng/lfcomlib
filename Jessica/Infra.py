@@ -278,13 +278,10 @@ class Infra:
             else:
                 return False
         except Exception as e:
-            conn_lost = ["2013", "(0, '')"]
-            for x in conn_lost:
-                if x in str(e.args[0]):
-                    return "conn_lost"
+            # return "conn_lost" anyway, and let db_entry() to retry 10 times
             err = "{},{}".format(__file__, e)
-            logger_i("ERROR", err)
-            return False
+            logger_i("WARNING", err)
+            return "conn_lost"
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):
 
