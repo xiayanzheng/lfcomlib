@@ -10,6 +10,7 @@ class Infra:
             "close": "close",
             "insert": "insert",
             "close_commit": "close_commit",
+            "commit": "commit",
             "update": "update",
             "select": "select"
         }
@@ -160,6 +161,14 @@ class Infra:
             # 返回 Main.Flow(sel返回到方法
             return False
 
+    def db_commit(self, db=None, db_type=None):
+        sql_commit_cfg = {
+                'sql': '',
+                'opr_type': 'commit',
+                'number_of_row': 0
+        }
+        return self.db_entry(db, db_type, **sql_commit_cfg)
+
     def db_entry(self, db=None, db_type=None, **kwargs):
         if db_type in ["maria", "mysql"]:
             if db is None:
@@ -267,6 +276,9 @@ class Infra:
             elif opr_type == "close_commit":
                 db.commit()
                 db.close()
+                return True
+            elif opr_type == "commit":
+                db.commt()
                 return True
             elif opr_type in ["update", "insert"]:
                 db_cursor.execute(sql)
