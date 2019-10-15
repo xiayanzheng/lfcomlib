@@ -1,8 +1,10 @@
-import requests, os, time, csv, sqlite3, subprocess, configparser, pymysql, xlrd, codecs, datetime, psycopg2
+import requests, os, time, csv, sqlite3, subprocess, configparser, pymysql, xlrd, codecs, datetime, psycopg2,sys,inspect
+import psycopg2.extras as psycopg2_extras
 import random
 import copy
 import shutil
 import urllib.parse as parse
+import logging
 from xlutils.copy import copy as xluCopy
 from functools import reduce
 from xlwt import Style

@@ -104,13 +104,16 @@ class DaPr:
                     RawData[RDVaule] = RawData.pop(Key)
         return RawData
 
-    def InsertIntoValuesToList(self, DataSet, InsertValue):
-        UnionData = []
-        for Data in DataSet:
-            UnionData.append(Data)
-            UnionData.append(InsertValue)
-        del UnionData[-1]
-        return UnionData
+    def InsertIntoValuesToList(self, data_set, insert_value):
+        union_data = []
+        if isinstance(data_set, list):
+            for Data in data_set:
+                union_data.append(Data)
+                union_data.append(insert_value)
+            del union_data[-1]
+            return union_data
+        else:
+            return data_set
 
     def InsertIntoXValuesToList(self, DataSet, Gap, InsertValue):
         UnionData = []

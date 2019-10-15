@@ -29,6 +29,7 @@ class LogSet:
                 log_level = self.log_level_dict[level]
             log_file = "{}{}".format(log_path, '.log')
             log = logging.getLogger()
+            log.setLevel(log_level)
             if len(log.handlers) == 0:
                 # Log to file and console
                 log_formatter = logging.Formatter(log_format)
@@ -37,7 +38,7 @@ class LogSet:
                 console.setFormatter(log_formatter)
                 log.addHandler(console)
                 file = RotatingFileHandler(log_file, mode='a', maxBytes=int(log_size) * 1024 * 1024,
-                                           backupCount=int(log_revision), encoding=None, delay=0)
+                                           backupCount=int(log_revision), encoding='utf-8', delay=0)
                 file.setFormatter(log_formatter)
                 file.setLevel(log_level)
                 log.addHandler(file)
@@ -63,7 +64,10 @@ def logger():
             if log_core is not None:
                 try:
                     if log_level == logging.DEBUG:
-                        log_core.log(log_level, log_msg_i)
+                        try:
+                            log_core.log(log_level, log_msg_i + "," + str(func_obj))
+                        finally:
+                            log_core.log(log_level, log_msg_i)
                     return func_obj
                 except Exception as e:
                     log_msg_i = log_msg_i + str(e)

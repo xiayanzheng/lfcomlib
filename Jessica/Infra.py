@@ -1,5 +1,6 @@
-from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg
+from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg,sys
 from lfcomlib.Jessica import psycopg2, shutil
+from lfcomlib.Jessica import psycopg2_extras
 from lfcomlib.Jessica.Err import logger_i
 
 
@@ -9,11 +10,14 @@ class Infra:
         self.db_opr_type = {
             "close": "close",
             "insert": "insert",
-            "close_commit": "close_commit",
+            "commit": "commit",
             "update": "update",
             "select": "select"
         }
         self.db_cfg_save = None
+        self.db_instance = None
+        self.db_controller = None
+        self.db_connect_error = None
         self.log_cfg = {}
 
     def rename_ff(self, from_, to_, show_msg=True):
@@ -55,17 +59,14 @@ class Infra:
         return folder_size
 
     def copy_ff(self, from_, to_, show_msg=True):
-        print(from_,to_)
         if os.path.isdir(from_):
             if not os.path.exists(to_):
                 shutil.copytree(from_, to_)
             else:
                 print('Folder exists')
                 pass
-            print("Folder {} Copied".format(from_))
         else:
             to_dir = os.path.split(to_)[0]
-            print(to_dir)
             if not os.path.exists(to_dir):
                 os.makedirs(to_dir)
             shutil.copy(from_, to_)
@@ -79,7 +80,6 @@ class Infra:
     def copy_ff_with_del(self, from_, to_, show_msg=True):
         if os.path.exists(to_):
             if os.path.isdir(to_):
-                print(to_)
                 shutil.rmtree(to_)
             else:
                 os.remove(to_)
@@ -163,22 +163,47 @@ class Infra:
             # 返回 Main.Flow(sel返回到方法
             return False
 
-    def db_entry(self, db=None, db_type=None, **kwargs):
+    def db_commit(self):
+        sql_commit_cfg = {
+                'sql': '',
+                'opr_type': 'commit',
+                'number_of_row': 0
+        }
+        return self.db_entry(**sql_commit_cfg)
+
+    def db_init(self, db_type=None, **kwargs):
+        retry_count = 0
         if db_type in ["maria", "mysql"]:
-            if db is None:
-                self.db_cfg_save = kwargs
-            result = self.maria_db(db, **kwargs)
-            counter = 0
-            while result in ['conn_lost'] and counter < 10:
-                db = self.maria_db(db=None, **self.db_cfg_save)
-                result = self.maria_db(db, **kwargs)
-                counter += 1
-                if counter == 10:
-                    print("DB connection lost")
-                    break
-            return result
+            self.db_controller = self.maria_db
+            self.db_connect_error = (pymysql.OperationalError, pymysql.InterfaceError)
         elif db_type == "postgres":
-            return self.postgres_db(db, **kwargs)
+            self.db_controller = self.postgres_db
+            self.db_connect_error = (psycopg2.OperationalError, psycopg2.InterfaceError)
+        else:
+            return False
+        
+        if self.db_instance is None:
+            self.db_cfg_save = kwargs
+            self.db_instance = self.db_controller(db_open=True, **kwargs)
+        return True        
+
+    def db_entry(self, **kwargs):
+        retry_count = 0
+        while True:
+            try:
+                return self.db_controller(db_open=False, **kwargs)
+            except self.db_connect_error:
+                if retry_count >= 3:
+                    print("retry over to connect DB")
+                    return False
+                else:
+                    retry_count += 1
+                    print("DB connection lost")
+                    time.sleep(1)
+                    self.db_instance = self.db_controller(db_open=True, **self.db_cfg_save)
+                    continue
+            except Exception:
+                return False
 
     def sqlalcheny_uri_maker(self, **kwargs):
         db_type = kwargs['db_type']
@@ -207,38 +232,56 @@ class Infra:
                                                db_config['db_name'])
             return uri
 
-    def postgres_db(self, db=None, **kwargs):
-        if db is None:
-            db_conn = psycopg2.connect(database=kwargs['db_name'],
-                                       user=kwargs['db_user'],
-                                       password=kwargs['db_pass'],
-                                       host=kwargs['db_host'],
-                                       port=kwargs['db_port'])
-            return db_conn
-        opr_type = kwargs["opr_type"]
-        sql = kwargs['sql']
-        number_of_row = kwargs['number_of_row']
-        cursor = db.cursor()
-        if opr_type == "update" or opr_type == "update":
-            cursor.execute(sql)
-            db.commit()
-            db.close()
-            return True
-        elif opr_type == "select":
-            # print(kwargs['sql'])
-            cursor.execute(sql)
-            if number_of_row == 0:
-                rows = cursor.fetchall()
-                db.close()
-                # print(rows)
-                return rows
-        else:
-            return False
-
-    def maria_db(self, db=None, **kwargs):
+    def postgres_db(self, db_open=False, **kwargs):
         try:
             # 连接MySQL数据库
-            if db is None:
+            if db_open is True:
+                db_conn = psycopg2.connect(database=kwargs['db_name'],
+                                            user=kwargs['db_user'],
+                                            password=kwargs['db_pass'],
+                                            host=kwargs['db_host'],
+                                            port=kwargs['db_port'])
+                return db_conn
+
+            sql = kwargs['sql']
+            opr_type = kwargs['opr_type']
+            number_of_row = kwargs['number_of_row']
+            
+            # 通过cursor创建游标
+            if opr_type == "select":
+                db_cursor = self.db_instance.cursor(cursor_factory=psycopg2_extras.RealDictCursor)
+                db_cursor.execute(sql)
+                if number_of_row == 1:
+                    raw_data = db_cursor.fetchone()
+                elif number_of_row > 0:
+                    raw_data = db_cursor.fetchmany(number_of_row)
+                else:
+                    raw_data = db_cursor.fetchall()
+                db_cursor.close()
+                return raw_data
+            elif opr_type == "close":
+                self.db_instance.close()
+                self.db_instance = None
+                return True
+            elif opr_type == "commit":
+                self.db_instance.commit()
+                return True
+            elif opr_type in ["update_nocommit", "insert_nocommit"]:
+                db_cursor = self.db_instance.cursor(cursor_factory=psycopg2_extras.RealDictCursor)
+                db_cursor.execute(sql)
+                db_cursor.close()
+                return True
+            else:
+                return False
+        except Exception as e:
+            err = "{},{}".format(os.path.basename(__file__), e)
+            logger_i("ERROR", err)
+            raise
+        
+    def maria_db(self, db_open=False, **kwargs):
+        try:
+            # 连接MySQL数据库
+            if db_open is True:
                 db_conn = pymysql.connect(host=kwargs['db_host'],
                                           port=kwargs['db_port'],
                                           user=kwargs['db_user'],
@@ -247,45 +290,41 @@ class Infra:
                                           charset=kwargs['db_char'],
                                           cursorclass=pymysql.cursors.DictCursor)
                 return db_conn
-            # print(db)
+
             sql = kwargs['sql']
             opr_type = kwargs['opr_type']
             number_of_row = kwargs['number_of_row']
+            
             # 通过cursor创建游标
-            db_cursor = db.cursor()
             if opr_type == "select":
+                db_cursor = self.db_instance.cursor()
                 db_cursor.execute(sql)
                 if number_of_row == 1:
                     raw_data = db_cursor.fetchone()
-                    return raw_data
-                if number_of_row > 0:
+                elif number_of_row > 0:
                     raw_data = db_cursor.fetchmany(number_of_row)
-                    return raw_data
                 else:
                     raw_data = db_cursor.fetchall()
-                    return raw_data
+                db_cursor.close()
+                return raw_data
             elif opr_type == "close":
-                db.close()
+                self.db_instance.close()
+                self.db_instance = None
                 return True
-            elif opr_type == "close_commit":
-                db.commit()
-                db.close()
-                return True
-            elif opr_type in ["update", "insert"]:
-                db_cursor.execute(sql)
-                db.commit()
+            elif opr_type == "commit":
+                self.db_instance.commit()
                 return True
             elif opr_type in ["update_nocommit", "insert_nocommit"]:
+                db_cursor = self.db_instance.cursor()
                 db_cursor.execute(sql)
+                db_cursor.close()
                 return True
             else:
                 return False
         except Exception as e:
-            if e.args[0] == "(0, '')":
-                return "conn_lost"
-            else:
-                logger_i("ERROR", e, **self.log_cfg)
-                return False
+            err = "{},{}".format(os.path.basename(__file__), e)
+            logger_i("ERROR", err)
+            raise
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):
 
