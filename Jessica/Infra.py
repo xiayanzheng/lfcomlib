@@ -2,7 +2,7 @@ from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configpars
 from lfcomlib.Jessica import psycopg2, shutil
 from lfcomlib.Jessica import psycopg2_extras
 from lfcomlib.Jessica.Err import logger_i
-
+from lfcomlib.Jessica import uuid
 
 class Infra:
 
@@ -19,6 +19,10 @@ class Infra:
         self.db_controller = None
         self.db_connect_error = None
         self.log_cfg = {}
+
+    def get_mac_address(self): 
+        mac=uuid.UUID(int = uuid.getnode()).hex[-12:] 
+        return ":".join([mac[e:e+2] for e in range(0,11,2)])   
 
     def rename_ff(self, from_, to_, show_msg=True):
         obj = from_
@@ -474,7 +478,6 @@ class Infra:
             config_str = config_str
             config_tmp = json.loads(config_str)
             # config = {k: v.replace('\\\\', '\\') for k, v in config_tmp.items()}
-
             return config_tmp
 
     def write_json(self, filepath, filename, data):

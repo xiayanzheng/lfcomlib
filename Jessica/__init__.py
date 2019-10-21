@@ -5,6 +5,7 @@ import copy
 import shutil
 import urllib.parse as parse
 import logging
+import uuid
 from xlutils.copy import copy as xluCopy
 from functools import reduce
 from xlwt import Style
