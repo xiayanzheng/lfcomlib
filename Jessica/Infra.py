@@ -1,8 +1,10 @@
-from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg,sys
+from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg, \
+    sys
 from lfcomlib.Jessica import psycopg2, shutil
 from lfcomlib.Jessica import psycopg2_extras
 from lfcomlib.Jessica.Err import logger_i
 from lfcomlib.Jessica import uuid
+
 
 class Infra:
 
@@ -20,9 +22,9 @@ class Infra:
         self.db_connect_error = None
         self.log_cfg = {}
 
-    def get_mac_address(self): 
-        mac=uuid.UUID(int = uuid.getnode()).hex[-12:] 
-        return ":".join([mac[e:e+2] for e in range(0,11,2)])   
+    def get_mac_address(self):
+        mac = uuid.UUID(int=uuid.getnode()).hex[-12:]
+        return ":".join([mac[e:e + 2] for e in range(0, 11, 2)])
 
     def rename_ff(self, from_, to_, show_msg=True):
         obj = from_
@@ -169,9 +171,9 @@ class Infra:
 
     def db_commit(self):
         sql_commit_cfg = {
-                'sql': '',
-                'opr_type': 'commit',
-                'number_of_row': 0
+            'sql': '',
+            'opr_type': 'commit',
+            'number_of_row': 0
         }
         return self.db_entry(**sql_commit_cfg)
 
@@ -185,11 +187,11 @@ class Infra:
             self.db_connect_error = (psycopg2.OperationalError, psycopg2.InterfaceError)
         else:
             return False
-        
+
         if self.db_instance is None:
             self.db_cfg_save = kwargs
             self.db_instance = self.db_controller(db_open=True, **kwargs)
-        return True        
+        return True
 
     def db_entry(self, **kwargs):
         retry_count = 0
@@ -241,16 +243,16 @@ class Infra:
             # 连接MySQL数据库
             if db_open is True:
                 db_conn = psycopg2.connect(database=kwargs['db_name'],
-                                            user=kwargs['db_user'],
-                                            password=kwargs['db_pass'],
-                                            host=kwargs['db_host'],
-                                            port=kwargs['db_port'])
+                                           user=kwargs['db_user'],
+                                           password=kwargs['db_pass'],
+                                           host=kwargs['db_host'],
+                                           port=kwargs['db_port'])
                 return db_conn
 
             sql = kwargs['sql']
             opr_type = kwargs['opr_type']
             number_of_row = kwargs['number_of_row']
-            
+
             # 通过cursor创建游标
             if opr_type == "select":
                 db_cursor = self.db_instance.cursor(cursor_factory=psycopg2_extras.RealDictCursor)
@@ -281,7 +283,7 @@ class Infra:
             err = "{},{}".format(os.path.basename(__file__), e)
             logger_i("ERROR", err)
             raise
-        
+
     def maria_db(self, db_open=False, **kwargs):
         try:
             # 连接MySQL数据库
@@ -298,7 +300,7 @@ class Infra:
             sql = kwargs['sql']
             opr_type = kwargs['opr_type']
             number_of_row = kwargs['number_of_row']
-            
+
             # 通过cursor创建游标
             if opr_type == "select":
                 db_cursor = self.db_instance.cursor()
@@ -405,6 +407,17 @@ class Infra:
         excuet_bat.wait()
         # print(execute_bat.returncode)
         excuet_bat.terminate()
+
+    def cmd_con_lite(self, command, return_mode="list"):
+        if type(command) is list:
+            cmd = os.popen(command)
+        else:
+            cmd = os.popen(str(command))
+        output = cmd.read()
+        if return_mode == 'list':
+            output = output.split('\n')
+        cmd.close()
+        return output
 
     def read_ini(self, config_file, section, key):
         read_config = configparser.ConfigParser()
