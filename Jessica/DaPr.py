@@ -148,6 +148,18 @@ class DaPr:
                 List.append(Data)
         return List
 
+    def merge_lists(self, base=None, *args):
+        print("args",args)
+        for list_item in args:
+            print("items", type(list_item), list_item)
+            if type(list_item) is not list:
+                raise TypeError
+            else:
+                if base is None:
+                    base = list_item
+                base.extend(list_item)
+        return base
+
     def MergeTwoDicts(self, DictA, DicB):
         MergedDict = {}
         for Key, Value in DictA.items():
