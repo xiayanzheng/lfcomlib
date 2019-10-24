@@ -1,6 +1,6 @@
-import requests, os, time, csv, sqlite3, subprocess, configparser, pymysql, xlrd, codecs, datetime, psycopg2,sys,inspect
+import requests, os, time, csv, sqlite3, subprocess, configparser, pymysql, xlrd, codecs, datetime, psycopg2, sys
 import psycopg2.extras as psycopg2_extras
-import random,copy,shutil,logging,uuid,win32evtlog
+import random, copy, shutil, logging, uuid, win32evtlog, telnetlib, inspect
 import urllib.parse as parse
 from xlutils.copy import copy as xluCopy
 from functools import reduce

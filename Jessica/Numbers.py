@@ -19,3 +19,9 @@ class Numbers:
         else:
             number_range_result.append([StartNumber, EndNumber])
         return number_range_result
+
+    def byte_to_gb(self, data, round_num=0):
+        if type(data) is int:
+            return round(int(data) / 1024 / 1024 / 1024, round_num)
+        else:
+            raise TypeError

@@ -2,7 +2,9 @@ from functools import wraps
 import logging
 from logging.handlers import RotatingFileHandler
 import platform
-from lfcomlib.Jessica.DaPr import DaPr
+from lfcomlib.Jessica import DaPr
+
+DaPr = DaPr.DaPr()
 
 if platform.system() == 'Windows':
     from lfcomlib.Jessica import win32evtlog
@@ -131,36 +133,46 @@ class WindowsEventLog:
         events = win32evtlog.ReadEventLog(log_core, flags, 0)
         return events
 
-    def process_win_event_log(self, events, print_event_item=False, event_filter=None, enable_message=False):
+    def process_win_event_log(self, events, start, end, print_event_item=False, event_filter=None,
+                              enable_message=False):
         package = []
         event_filter_x = []
-        print(event_filter_x)
+        # print(event_filter_x)
         if event_filter is None:
             for k, v in self.event_dict:
                 event_filter_x.append(v)
         elif type(event_filter) is list:
             for item in event_filter:
                 event_filter_x.append(self.event_dict[item])
+
+        timestamp_start = DaPr.datetime_to_timestamp(DaPr.string_to_datetime(start))
+        timestamp_end = DaPr.datetime_to_timestamp(DaPr.string_to_datetime(end))
         for event in events:
-            data_set = {
-                self.item_category: event.EventCategory,
-                self.item_time: event.TimeGenerated,
-                self.item_source_name: event.SourceName,
-                self.item_id: event.EventID,
-                self.event_type: event.EventType,
-                self.event_message: "disabled",
-            }
-            if enable_message:
-                data_set[self.event_message] = event.StringInserts
-            if event.EventType in event_filter_x:
-                if print_event_item:
-                    print(data_set)
-                package.append(data_set)
+            # print(event.TimeGenerated,event.SourceName)
+            timestamp_event_time = DaPr.datetime_to_timestamp(
+                    event.TimeGenerated)
+            if timestamp_start < timestamp_event_time > timestamp_end:
+                # print(start, event.TimeGenerated, end)
+                data_set = {
+                    self.item_category: event.EventCategory,
+                    self.item_time: event.TimeGenerated,
+                    self.item_source_name: event.SourceName,
+                    self.item_id: str(event.EventID),
+                    self.event_type: event.EventType,
+                    self.event_message: "disabled",
+                }
+                if enable_message:
+                    data_set[self.event_message] = event.StringInserts
+                if event.EventType in event_filter_x:
+                    if print_event_item:
+                        print(data_set)
+                    package.append(data_set)
         return package
 
-    def get_event_data(self, server, event_channel, print_event_item=False, event_filter=None, enable_message=False):
+    def get_event_data(self, server, event_channel, start, end, print_event_item=False, event_filter=None,
+                       enable_message=False):
         channels = []
-        processed_data = None
+        processed_data = []
         if type(event_channel) is not list:
             channels.append(event_channel)
         elif type(event_channel) is list:
@@ -170,10 +182,8 @@ class WindowsEventLog:
         for channel in channels:
             core, flags = self.gen_event_log_core(server, channel)
             event_log_data = self.get_win_event_log(core, flags)
-            single_channel_data = self.process_win_event_log(event_log_data, print_event_item, event_filter,
+            single_channel_data = self.process_win_event_log(event_log_data, start, end,print_event_item, event_filter,
                                                              enable_message)
-            if processed_data is None:
-                processed_data = single_channel_data
             processed_data.append(single_channel_data)
-        processed_data = DaPr.merge_lists([], processed_data)
+        processed_data = DaPr.merge_lists(processed_data)
         return processed_data

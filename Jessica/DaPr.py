@@ -141,24 +141,24 @@ class DaPr:
         del UnionData[-1]
         return UnionData
 
-    def MergeMultiTupleList(self, TupleList):
-        List = []
-        for Tuple in TupleList:
+    def MergeMultiTupleList(self, tuple_list):
+        raw_list = []
+        for Tuple in tuple_list:
             for Data in Tuple:
-                List.append(Data)
-        return List
+                raw_list.append(Data)
+        return raw_list
 
-    def merge_lists(self, base=None, *args):
-        print("args",args)
-        for list_item in args:
-            print("items", type(list_item), list_item)
-            if type(list_item) is not list:
-                raise TypeError
-            else:
-                if base is None:
-                    base = list_item
-                base.extend(list_item)
+    def merge_lists(self, data_list, *args):
+        base = ["place_holder"]
+        for data in data_list:
+            base.extend(data)
+        if len(args) != 0:
+            for list_data in args:
+                for list_item in list_data:
+                    base.extend(list_item)
+        base.pop(0)
         return base
+
 
     def MergeTwoDicts(self, DictA, DicB):
         MergedDict = {}
@@ -190,8 +190,8 @@ class DaPr:
         return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(Temp, '\\'))
 
     def convert_two_lists_to_dict(self, ListForKey, ListForValue):
-        dict = dict(zip(ListForKey, ListForValue))
-        return dict
+        new_dict = dict(zip(ListForKey, ListForValue))
+        return new_dict
 
     def dedupe(self, dataset):
         package = []
@@ -204,6 +204,17 @@ class DaPr:
 
     def timestamp_to_datetime(self, timestamp):
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(timestamp)))
+
+    def string_to_datetime(self,txt):
+        if type(txt) is str:
+            fmt = '%Y-%m-%d'
+            if "-" in txt:
+                fmt = '%Y-%m-%d'
+            elif "/" in txt:
+                fmt = '%Y/%m/%d'
+            return datetime.datetime.strptime(txt, fmt)
+        else:
+            raise TypeError
 
     def datetime_to_timestamp(self, datetime):
         return int(datetime.timestamp())

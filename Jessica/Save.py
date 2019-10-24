@@ -3,19 +3,23 @@ from lfcomlib.Jessica import os, csv, xlrd, copy, Style, Msg, ErrMsg
 
 class Data:
 
-    def toCSV(self, FilePath, FileName, Headers, Data):
-        LogPath = os.path.join(FilePath, FileName)
-        print(Msg.StartWriteData)
-        with open(LogPath, 'w', newline='') as CSV:
+    def toCSV(self, file_path, file_name, headers, data, show_status=False):
+        file_path = os.path.join(file_path, file_name)
+        if show_status:
+            print(Msg.StartWriteData)
+        with open(file_path, 'w', newline='') as CSV:
             # 定义Writer对象(由CSV.DictWriter(以字典模式写入)模块组成并定义列名称)
-            Writer = csv.DictWriter(CSV, fieldnames=Headers)
+            handler = csv.DictWriter(CSV, fieldnames=headers)
             # 写入列名称(字典的键)
-            Writer.writeheader()
+            handler.writeheader()
             # 循环写入列表中每一条数据到CSV文件
-            for Row in Data:
+            for Row in data:
+                if show_status:
+                    print(Row)
                 # 写入元素(字典的值)
-                Writer.writerow(Row)
-        print(Msg.WriteDataSuccess)
+                handler.writerow(Row)
+        if show_status:
+            print(Msg.WriteDataSuccess)
         CSV.close()
 
     def toCSVSR(self, CSV, Headers, Data):

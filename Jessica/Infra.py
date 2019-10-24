@@ -1,10 +1,10 @@
-from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg, \
-    sys
-from lfcomlib.Jessica import psycopg2, shutil
+from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg
+from lfcomlib.Jessica import psycopg2, shutil,telnetlib
 from lfcomlib.Jessica import psycopg2_extras
 from lfcomlib.Jessica.Err import logger_i
 from lfcomlib.Jessica import uuid
 
+DaPr = DaPr.DaPr()
 
 class Infra:
 
@@ -499,3 +499,46 @@ class Infra:
         # Writing JSON data
         with open(file, 'w') as f:
             json.dump(data, f)
+
+
+class TelnetConn:
+
+    def __init__(self):
+        self.tn = None
+        self.buffer = []
+        self.debug = False
+        self.user_groups = None
+        self.user_tasks = None
+
+    def create_telnet_session(self, host, port=23):
+        self.tn = telnetlib.Telnet(host)
+
+    def telnet_interface(self, show_response=False, **kwargs):
+        cfg = kwargs
+        if cfg['execute_type'] == 'direct':
+            self.run_direct(show_response, **kwargs)
+        if cfg['execute_type'] == 'loop':
+            self.run_loop(show_response, **kwargs)
+
+    def run_direct(self, show_response=False, **kwargs):
+        cfg = kwargs
+        # print("[Execute Type:{}][Task Name:{}]".format(cfg['execute_type'], cfg['command_name']))
+        exp = bytes(cfg['expect'], encoding="utf8")
+        rsp = str(cfg['response']).encode('ascii') + b"\n"
+        if cfg['expect'] != "":
+            self.tn.read_until(exp, timeout=cfg["timeout"])
+        self.tn.write(rsp)
+        time.sleep(cfg['time_wait'])
+        temp = self.tn.read_very_eager().decode('ascii')
+        self.buffer.append(temp)
+        if show_response:
+            print("Telnet response start")
+            print(temp)
+            print("Telnet response end")
+            input("Continue:")
+
+    def run_loop(self, show_response, **kwargs):
+        cfg = kwargs
+        loop_time = cfg['loop_time']
+        for i in range(loop_time):
+            self.run_direct(show_response, **cfg)
