@@ -3,6 +3,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import platform
 from lfcomlib.Jessica import DaPr
+import functools
 
 DaPr = DaPr.DaPr()
 
@@ -150,7 +151,7 @@ class WindowsEventLog:
         for event in events:
             # print(event.TimeGenerated,event.SourceName)
             timestamp_event_time = DaPr.datetime_to_timestamp(
-                    event.TimeGenerated)
+                event.TimeGenerated)
             if timestamp_start < timestamp_event_time > timestamp_end:
                 # print(start, event.TimeGenerated, end)
                 data_set = {
@@ -182,8 +183,143 @@ class WindowsEventLog:
         for channel in channels:
             core, flags = self.gen_event_log_core(server, channel)
             event_log_data = self.get_win_event_log(core, flags)
-            single_channel_data = self.process_win_event_log(event_log_data, start, end,print_event_item, event_filter,
+            single_channel_data = self.process_win_event_log(event_log_data, start, end, print_event_item, event_filter,
                                                              enable_message)
             processed_data.append(single_channel_data)
         processed_data = DaPr.merge_lists(processed_data)
         return processed_data
+
+
+class GetWindowsEventLogByWmiQuery:
+
+    def __init__(self):
+        import wmi
+        self.evt_type_code_dict = {
+            1: "Error",
+            2: "Warning",
+            3: "Information",
+            4: "Security_Audit_Success",
+            5: "Security_Audit_Failure"
+        }
+        self.wmi_intense = wmi.WMI()  # can put other server here if needed
+        self.type_INFO = 3
+        self.type_WARNING = 2
+        self.type_ERROR = 1
+        self.type_AUDIT_SUCCESS = 4
+        self.type_AUDIT_FAILURE = 5
+        self.evt_item_Category = 'Category'
+        self.evt_item_ComputerName = 'ComputerName'
+        self.evt_item_EventCode = 'EventCode'
+        self.evt_item_EventIdentifier = 'EventIdentifier'
+        self.evt_item_EventType = 'EventType'
+        self.evt_item_InsertionStrings = 'InsertionStrings'
+        self.evt_item_Logfile = 'Logfile'
+        self.evt_item_Message = 'Message'
+        self.evt_item_Environment = 'Environment'
+        self.evt_item_RecordNumber = 'RecordNumber'
+        self.evt_item_SourceName = 'SourceName'
+        self.evt_item_TimeGenerated = 'TimeGenerated'
+        self.evt_item_TimeWritten = 'TimeWritten'
+        self.evt_item_Type = 'Type'
+        self.evt_item_All = '*'
+        self.disable_insertion_strings = True
+        self.disable_data = True
+        self.disable_message = True
+        self.wql_set = {
+            'wql_get_event_log_base': "SELECT {} FROM Win32_NTLogEvent ",
+            'wql_get_event_log_logfile': '',
+            'wql_get_event_log_evt_type': '',
+            'wql_get_event_log_logfile_head': "WHERE Logfile='{}' ",
+            "wql_get_event_log_logfile_extra": "OR Logfile='{}' ",
+            'wql_get_event_log_time_range_start': "AND TimeWritten >= {} ",
+            'wql_get_event_log_time_range_end': "AND TimeWritten < {} ",
+            'wql_get_event_log_evt_single_type': "AND EventType={} ",
+            'wql_get_event_log_evt_multi_type_front': "AND (EventType={} ",
+            'wql_get_event_log_evt_multi_type_middle': "EventType={} ",
+            'wql_get_event_log_evt_multi_type_back': "OR EventType={}) "
+        }
+
+    def set_evt_date_range(self, start_date, end_date):
+        wql_list = []
+        dates = [start_date, end_date]
+        for i in range(len(dates)):
+            data = dates[i]
+            marks = ['/', '-']
+            if type(dates[i]) is str:
+                for mark in marks:
+                    if mark in data:
+                        dates[i] = functools.reduce(lambda x, y: x + y, dates[i].split(mark))
+
+        wql_date_format = "'{}000000.000000-360'"
+        times = [
+            {"wql": self.wql_set["wql_get_event_log_time_range_start"], "param": wql_date_format.format(dates[0])},
+            {"wql": self.wql_set["wql_get_event_log_time_range_end"], "param": wql_date_format.format(dates[1])},
+        ]
+        for wql_t in times:
+            wql_list.append(wql_t['wql'].format(wql_t['param']))
+        return wql_list
+
+    def set_evt_log_file(self, cfg):
+        wql_list = []
+        wql_get_event_log_logfile_head_added = False
+        for param in cfg['param']:
+            if not wql_get_event_log_logfile_head_added:
+                wql_list.append(self.wql_set['wql_get_event_log_logfile_head'].format(param))
+                wql_get_event_log_logfile_head_added = True
+            else:
+                wql_list.append(self.wql_set['wql_get_event_log_logfile_extra'].format(param))
+        wql_list.append(self.wql_set[cfg['wql']].format(cfg['param']))
+        return wql_list
+
+    def set_evt_log_type(self, cfg_set):
+        wql_list = []
+        type_list = cfg_set['param']
+        num_of_type_list = len(type_list)
+        wql_list.append(self.wql_set['wql_get_event_log_evt_multi_type_front'].format(type_list[0]))
+        if num_of_type_list < 2:
+            type_list.pop(0)
+            for cfg in type_list:
+                wql_list.append(self.wql_set['wql_get_event_log_evt_multi_type_middle'].format(cfg))
+            wql_list.pop(-1)
+        wql_list.append(self.wql_set['wql_get_event_log_evt_multi_type_back'].format(type_list[-1]))
+        return wql_list
+
+    def make_wql(self, cfg_set, start_date, end_date):
+        wql_list = []
+        for cfg in cfg_set:
+            if cfg['wql'] == 'wql_get_event_log_base':
+                wql_list.append(self.wql_set['wql_get_event_log_base'].format(cfg['param']))
+            elif cfg['wql'] == 'wql_get_event_log_logfile':
+                wql_list.extend(self.set_evt_log_file(cfg))
+            elif cfg['wql'] == 'wql_get_event_log_evt_type':
+                wql_list.extend(self.set_evt_log_type(cfg))
+            elif cfg['wql'] in self.wql_set.keys():
+                wql_list.append(self.wql_set[cfg['wql']].format(cfg['param']))
+            else:
+                wql_list.append(cfg['wql'].format(cfg['param']))
+        wql_list.extend(self.set_evt_date_range(start_date, end_date))
+        wql = functools.reduce(lambda x, y: x + y, wql_list)
+        return wql
+
+    def get_log(self, cfg_set, start_date, end_date, show_output=False):
+        wql = self.make_wql(cfg_set, start_date, end_date)
+        if show_output:
+            print(wql)
+        evt_raw = self.wmi_intense.query(wql)
+        res = []
+        for evt_log in evt_raw:
+            if show_output:
+                print(evt_log)
+            pkg = {}
+            for attr in list(evt_log.__dict__['properties'].keys()):
+                if hasattr(evt_log, attr):
+                    if str(attr) == 'InsertionStrings' and self.disable_insertion_strings:
+                        pass
+                    elif str(attr) == 'Data' and self.disable_data:
+                        pass
+                    elif str(attr) == 'Message' and self.disable_message:
+                        pass
+                    else:
+                        pkg[attr] = str(getattr(evt_log, attr))
+            res.append(pkg)
+        return res
