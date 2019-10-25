@@ -12,7 +12,8 @@ from lfcomlib.Jessica import Utl
 from lfcomlib.Jessica import Err
 from lfcomlib.Jessica import Log
 
-Utl = Utl.Utl()
-DaPrI = DaPr.DaPr()
-Infra = Infra.Infra()
-Msg = Msg.Msg()
+
+DaPrX = DaPr.DaPr()
+InfraX = Infra.Infra()
+MsgX = Msg.Msg()
+UtlX = Utl.Utl()

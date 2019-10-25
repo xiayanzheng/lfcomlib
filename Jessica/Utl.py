@@ -1,4 +1,6 @@
 from lfcomlib.Jessica import random, copy
+import time, threading
+
 
 class Utl:
 
@@ -19,3 +21,11 @@ class Utl:
         if is_debug:
             for msg in msgs:
                 print(msg)
+
+    @staticmethod
+    def func_timeout(func, timeout=60):
+        t = threading.Thread(target=func)
+        t.setDaemon(True)
+        t.start()
+        t.join(timeout)
+        print("Timeout")
