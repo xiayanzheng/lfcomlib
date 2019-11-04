@@ -11,6 +11,7 @@ from lfcomlib.Jessica import Infra
 from lfcomlib.Jessica import Utl
 from lfcomlib.Jessica import Err
 from lfcomlib.Jessica import Log
+from lfcomlib.Jessica.Infra import TelnetConn
 
 
 DaPrX = DaPr.DaPr()

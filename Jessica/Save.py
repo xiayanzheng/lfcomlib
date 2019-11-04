@@ -6,7 +6,7 @@ class Data:
     def toCSV(self, file_path, file_name, headers, data, show_status=False):
         file_path = os.path.join(file_path, file_name)
         if show_status:
-            print(Msg.StartWriteData)
+            print("S")
         with open(file_path, 'w', newline='') as CSV:
             # 定义Writer对象(由CSV.DictWriter(以字典模式写入)模块组成并定义列名称)
             handler = csv.DictWriter(CSV, fieldnames=headers)
@@ -40,9 +40,7 @@ class Data:
             # 写入数据
             Log.write(Data)
             # 输出"写入数据成功数据"
-            print(Msg.WriteDataSuccess)
             # 打开数据存储文件夹
-            os.system("explorer.exe %s" % os.path.join(FilePath, 'Logs'))
         return LogPath
 
     def toXls(self, File, Row, Col, Str, Style=Style.default_style):

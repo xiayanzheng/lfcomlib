@@ -102,7 +102,7 @@ def logger_manual(*args):
         pass
 
 
-class WindowsEventLog:
+class GetWindowsEventLog:
 
     def __init__(self):
         self.type_INFO = "EVENTLOG_INFORMATION_TYPE"
