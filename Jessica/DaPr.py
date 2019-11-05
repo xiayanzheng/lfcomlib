@@ -9,7 +9,7 @@ class Dict(dict):
 class DaPr:
 
     @staticmethod
-    def find_path_forward(init_path, target, max_layer=30):
+    def find_path_backward(init_path, target, max_layer=30):
         pre = '..'
         p = [init_path]
         f = os.path.abspath(os.path.join(*p))

@@ -196,11 +196,11 @@ class GetWindowsEventLogByWmiQuery:
     def __init__(self):
         import wmi
         self.evt_type_code_dict = {
-            1: "Error",
-            2: "Warning",
-            3: "Information",
-            4: "Security_Audit_Success",
-            5: "Security_Audit_Failure"
+            "error": 1,
+            "warning": 2,
+            "information": 3,
+            "security_audit_success": 4,
+            "security_audit_failure": 5
         }
         self.wmi_intense = wmi.WMI()  # can put other server here if needed
         self.type_INFO = 3
@@ -262,22 +262,22 @@ class GetWindowsEventLogByWmiQuery:
 
     def set_evt_log_file(self, cfg):
         wql_list = []
-        wql_get_event_log_logfile_head_added = False
-        for param in cfg['param']:
-            if not wql_get_event_log_logfile_head_added:
-                wql_list.append(self.wql_set['wql_get_event_log_logfile_head'].format(param))
-                wql_get_event_log_logfile_head_added = True
-            else:
-                wql_list.append(self.wql_set['wql_get_event_log_logfile_extra'].format(param))
+        param = cfg['param']
+        wql_list.append(self.wql_set['wql_get_event_log_logfile_head'].format(param))
         wql_list.append(self.wql_set[cfg['wql']].format(cfg['param']))
         return wql_list
 
     def set_evt_log_type(self, cfg_set):
         wql_list = []
         type_list = cfg_set['param']
-        num_of_type_list = len(type_list)
+        for i in range(len(type_list)):
+            type_i = type_list[i]
+            if type(type_i) is str:
+                n_type_i = str.lower(type_i)
+                if n_type_i in self.evt_type_code_dict.keys():
+                    type_list[i] = self.evt_type_code_dict[n_type_i]
         wql_list.append(self.wql_set['wql_get_event_log_evt_multi_type_front'].format(type_list[0]))
-        if num_of_type_list < 2:
+        if len(type_list) < 2:
             type_list.pop(0)
             for cfg in type_list:
                 wql_list.append(self.wql_set['wql_get_event_log_evt_multi_type_middle'].format(cfg))
@@ -303,24 +303,31 @@ class GetWindowsEventLogByWmiQuery:
         return wql
 
     def get_log(self, cfg_set, start_date, end_date, show_output=False):
-        wql = self.make_wql(cfg_set, start_date, end_date)
-        if show_output:
-            print(wql)
-        evt_raw = self.wmi_intense.query(wql)
         res = []
-        for evt_log in evt_raw:
+        for log_file in cfg_set['log_file']:
+            new_cfg = [
+                {"wql": "wql_get_event_log_base", "param": cfg_set['event_items']},
+                {"wql": "wql_get_event_log_logfile", "param": log_file},
+                {"wql": "wql_get_event_log_evt_type", "param": cfg_set['EventTypes']}
+            ]
+            wql = self.make_wql(new_cfg, start_date, end_date)
             if show_output:
-                print(evt_log)
-            pkg = {}
-            for attr in list(evt_log.__dict__['properties'].keys()):
-                if hasattr(evt_log, attr):
-                    if str(attr) == 'InsertionStrings' and self.disable_insertion_strings:
-                        pass
-                    elif str(attr) == 'Data' and self.disable_data:
-                        pass
-                    elif str(attr) == 'Message' and self.disable_message:
-                        pass
-                    else:
-                        pkg[attr] = str(getattr(evt_log, attr))
-            res.append(pkg)
+                print(wql)
+            evt_raw = self.wmi_intense.query(wql)
+
+            for evt_log in evt_raw:
+                if show_output:
+                    print(evt_log)
+                pkg = {}
+                for attr in list(evt_log.__dict__['properties'].keys()):
+                    if hasattr(evt_log, attr):
+                        if str(attr) == 'InsertionStrings' and self.disable_insertion_strings:
+                            pass
+                        elif str(attr) == 'Data' and self.disable_data:
+                            pass
+                        elif str(attr) == 'Message' and self.disable_message:
+                            pass
+                        else:
+                            pkg[attr] = str(getattr(evt_log, attr))
+                res.append(pkg)
         return res
