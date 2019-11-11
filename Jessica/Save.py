@@ -30,7 +30,7 @@ class Data:
         # 写入元素(字典的值)
         Writer.writerow(Data)
         # print(Msg.WriteDataSuccess)
-        CSV.Close()
+        CSV.close()
 
     def toTXT(self, FilePath, FileName, Data):
         # 定义文件路径
@@ -50,7 +50,7 @@ class Data:
         wb = copy(rb)
         ws = wb.get_sheet(0)
         ws.write(Row, Col, Str, Style)
-        wb.Save(File)
+        wb.save(File)
 
     def ModifyExcel(self, FilePath, Filename, RowColSet, Data):
         book = xlrd.open_workbook(Filename)  # 打开excel
@@ -59,7 +59,7 @@ class Data:
         for RowCol in RowColSet:
             sheet.write(RowCol[0], RowCol[1], Data)  # 修改0行1列的数据为'Haha'
         TempFile = os.path.join(FilePath, 'Temp.xls')
-        new_book.Save(TempFile)  # 保存新的excel
+        new_book.save(TempFile)  # 保存新的excel
         try:
             os.remove(Filename)  # 删除旧的excel
             os.rename(TempFile, Filename)  # 将新excel重命名
