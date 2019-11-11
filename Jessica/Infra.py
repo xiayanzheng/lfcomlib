@@ -34,21 +34,26 @@ class Infra:
                 os.rename(obj, to_)
             finally:
                 pass
-            print("Folder {} renamed to {}".format(obj, to_))
+            if show_msg:
+                print("Folder {} renamed to {}".format(obj, to_))
         if os.path.isfile(obj):
             os.rename(obj, to_)
-            print("File {} renamed to {}".format(obj, to_))
+            if show_msg:
+                print("File {} renamed to {}".format(obj, to_))
 
     def remove_ff(self, ff, show_msg=True):
         if os.path.exists(ff):
             if os.path.isdir(ff):
                 shutil.rmtree(ff)
-                print("Folder {} deleted".format(ff))
+                if show_msg:
+                    print("Folder {} deleted".format(ff))
             else:
                 os.remove(ff)
-                print("File {} deleted".format(ff))
+                if show_msg:
+                    print("File {} deleted".format(ff))
         else:
-            print("Delete Operation Filed".format(ff))
+            if show_msg:
+                print("Delete Operation Filed".format(ff))
             return False
 
     def dir_check(self, dir):
