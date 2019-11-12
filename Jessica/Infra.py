@@ -98,14 +98,14 @@ class Infra:
         self.copy_ff(from_, to_, show_msg)
 
     def open_dir(self, selected_dir):
-        os.system("explorer %s" % DaPr.ReplaceDirSlash(selected_dir))
+        os.system("explorer %s" % DaPr.replace_dir_slash(selected_dir))
 
     def open_file(self, program, selected_dir, param):
         if param is None:
             param_x = ' '
         else:
             param_x = param
-        os.system("{} {} {}".format(program, DaPr.ReplaceDirSlash(selected_dir), param_x))
+        os.system("{} {} {}".format(program, DaPr.replace_dir_slash(selected_dir), param_x))
 
     def start_exe(self, path, program):
         os.system("start {}".format(os.path.join(path, program)))
@@ -357,7 +357,7 @@ class Infra:
                 else:
                     raw_data = db_instance.fetchall()
                 if output_type == "List":
-                    return DaPr.MergeMultiTupleList(object, raw_data)
+                    return DaPr.merge_multi_tuple_list(object, raw_data)
                 else:
                     return raw_data
             else:
@@ -384,7 +384,7 @@ class Infra:
             else:
                 raw_data = db_instance.fetchall()
             if output_type == "List":
-                return DaPr.MergeMultiTupleList(raw_data)
+                return DaPr.merge_multi_tuple_list(raw_data)
             else:
                 return raw_data
         else:

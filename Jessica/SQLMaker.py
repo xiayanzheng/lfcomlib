@@ -40,7 +40,7 @@ class ForMSSQL:
                         Unziped['Temp'].append("'%s'" % Element)
                     elif DataSet in GUC and Primery:
                         Unziped['Temp'].append(" %s = '%s' " % (Element))
-                Unziped[DataSet] = reduce(lambda x, y: x + y, DaPr.InsertIntoValuesToList(Unziped['Temp'], ","))
+                Unziped[DataSet] = reduce(lambda x, y: x + y, DaPr.insert_values_to_list(Unziped['Temp'], ","))
                 Unziped['Temp'].clear()
             else:
                 pass

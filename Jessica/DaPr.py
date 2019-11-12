@@ -71,14 +71,14 @@ class DaPr:
         else:
             return False
 
-    def ReplaceDirSlash(self, Dir):
-        return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(Dir.split("/"), "\\"))
+    def replace_dir_slash(self, Dir):
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(Dir.split("/"), "\\"))
 
-    def ReplaceDirSymbol(self, Dir, ReplaceFrom, ReplaceTo):
-        return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(Dir.split(ReplaceFrom), ReplaceTo))
+    def replace_dir_symbol(self, Dir, ReplaceFrom, ReplaceTo):
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(Dir.split(ReplaceFrom), ReplaceTo))
 
     def replace_symbol(self, str, ReplaceFrom, ReplaceTo):
-        return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(str.split(ReplaceFrom), ReplaceTo))
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(str.split(ReplaceFrom), ReplaceTo))
 
     def clean_list(self, str_i, split_str, *args):
         raw = str_i.split(split_str)
@@ -95,16 +95,16 @@ class DaPr:
         return path
 
     def insert_value_to_list_and_merge(self, list, value):
-        return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(list, value))
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(list, value))
 
-    def RenameDictKeys(self, RawData, ReplaceKeyMap):
+    def rename_dict_keys(self, RawData, ReplaceKeyMap):
         for Key in RawData:
             for RDKey, RDVaule in ReplaceKeyMap.items():
                 if Key == RDKey:
                     RawData[RDVaule] = RawData.pop(Key)
         return RawData
 
-    def InsertIntoValuesToList(self, data_set, insert_value):
+    def insert_values_to_list(self, data_set, insert_value):
         union_data = []
         if isinstance(data_set, list):
             for Data in data_set:
@@ -115,33 +115,33 @@ class DaPr:
         else:
             return data_set
 
-    def InsertIntoXValuesToList(self, DataSet, Gap, InsertValue):
-        UnionData = []
-        Count = 0
+    def insert_into_x_values_to_list(self, DataSet, Gap, InsertValue):
+        union_data = []
+        count = 0
         if len(DataSet) > Gap:
             for Data in DataSet:
-                if Count < Gap:
-                    UnionData.append(Data)
-                    Count += 1
+                if count < Gap:
+                    union_data.append(Data)
+                    count += 1
                 else:
-                    UnionData.append(InsertValue)
-                    Count = 0
-            del UnionData[-1]
+                    union_data.append(InsertValue)
+                    count = 0
+            del union_data[-1]
         else:
             for Data in DataSet:
-                UnionData.append(Data)
-        return UnionData
+                union_data.append(Data)
+        return union_data
 
-    def UnpackageListAndInsertValuesToList(self, DataSet, InsertValue):
-        UnionData = []
+    def unpackage_list_and_insert_values_to_list(self, DataSet, InsertValue):
+        union_data = []
         for List in DataSet:
             for Data in List:
-                UnionData.append(Data)
-            UnionData.append(InsertValue)
-        del UnionData[-1]
-        return UnionData
+                union_data.append(Data)
+            union_data.append(InsertValue)
+        del union_data[-1]
+        return union_data
 
-    def MergeMultiTupleList(self, tuple_list):
+    def merge_multi_tuple_list(self, tuple_list):
         raw_list = []
         for Tuple in tuple_list:
             for Data in Tuple:
@@ -159,38 +159,38 @@ class DaPr:
         base.pop(0)
         return base
 
+    def merge_two_dicts(self, dict_a, dic_b):
+        merged_dict = {}
+        for Key, Value in dict_a.items():
+            merged_dict[Key] = Value
+        for Key, Value in dic_b.items():
+            merged_dict[Key] = Value
+        return merged_dict
 
-    def MergeTwoDicts(self, DictA, DicB):
-        MergedDict = {}
-        for Key, Value in DictA.items():
-            MergedDict[Key] = Value
-        for Key, Value in DicB.items():
-            MergedDict[Key] = Value
-        return MergedDict
+    def find_valid_data_from_dict(self, valid_data_name, dict_i):
+        valid_data = {}
+        for Key, Value in dict_i.items():
+            if Key in valid_data_name:
+                valid_data[Key] = Value
+        return valid_data
 
-    def FindValidDataFromDict(self, ValidDataName, Dict):
-        ValidData = {}
-        for Key, Value in Dict.items():
-            if Key in ValidDataName:
-                ValidData[Key] = Value
-        return ValidData
-
-    def RootPath(self, RootDirName):
-        try:
-            initPath = os.getcwd().split('\\')
-        except:
-            initPath = os.getcwd().split('/')
-        Temp = []
-        for Folder in initPath:
-            if Folder != RootDirName:
-                Temp.append(Folder)
+    def root_path(self, root_dir_name):
+        init_path = os.getcwd()
+        if '\\' in init_path:
+            init_path = os.getcwd().split('\\')
+        elif '/' in init_path:
+            init_path = os.getcwd().split('/')
+        temp = []
+        for Folder in init_path:
+            if Folder != root_dir_name:
+                temp.append(Folder)
             else:
-                Temp.append(RootDirName)
+                temp.append(root_dir_name)
                 break
-        return reduce(lambda x, y: x + y, self.InsertIntoValuesToList(Temp, '\\'))
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(temp, '\\'))
 
-    def convert_two_lists_to_dict(self, ListForKey, ListForValue):
-        new_dict = dict(zip(ListForKey, ListForValue))
+    def convert_two_lists_to_dict(self, list_for_key, list_for_value):
+        new_dict = dict(zip(list_for_key, list_for_value))
         return new_dict
 
     def dedupe(self, dataset):
@@ -205,7 +205,7 @@ class DaPr:
     def timestamp_to_datetime(self, timestamp):
         return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(timestamp)))
 
-    def string_to_datetime(self,txt):
+    def string_to_datetime(self, txt):
         if type(txt) is str:
             fmt = '%Y-%m-%d'
             if "-" in txt:
@@ -236,7 +236,7 @@ class DaPr:
             'month': time.strftime('%m', lt),
             'day': time.strftime('%d', lt),
             'hour': time.strftime('%H', lt),
-            'minite': time.strftime('%M', lt),
+            'minute': time.strftime('%M', lt),
             'second': time.strftime('%S', lt),
         }
         return data_set
@@ -244,15 +244,15 @@ class DaPr:
     def timestamp_curr_time(self):
         return int(time.time())
 
-    def time_diff(self, datetimeA, datetimeB):
-        time_diff = datetimeA - datetimeB
-        time_diff_r1 = str(time_diff).split(', ')
+    def time_diff(self, datetime_a, datetime_b):
+        time_diff_d = datetime_a - datetime_b
+        time_diff_r1 = str(time_diff_d).split(', ')
         if len(time_diff_r1) > 1:
             time_diff_r1 = time_diff_r1[1]
             time_diff_r2 = time_diff_r1.split(':')
         else:
             time_diff_r2 = time_diff_r1[0].split(':')
-        time_diff_day = str(time_diff.days).split(' day')
+        time_diff_day = str(time_diff_d.days).split(' day')
         time_diff_day = int(float(time_diff_day[0]))
         day2hour = time_diff_day * 24
 
