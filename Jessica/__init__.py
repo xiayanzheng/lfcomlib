@@ -11,10 +11,11 @@ from lfcomlib.Jessica import Infra as InfraCore
 from lfcomlib.Jessica import Utl as UtlCore
 from lfcomlib.Jessica import Err as ErrCore
 from lfcomlib.Jessica import Log as LogCore
+from lfcomlib.Jessica import Save as SaveCore
 from lfcomlib.Jessica.Infra import TelnetConn
-
 
 DaPr = DaPrCore.DaPr()
 Infra = InfraCore.Infra()
 Msg = MsgCore.Msg()
 Utl = UtlCore.Utl()
+Save = SaveCore.Data()
