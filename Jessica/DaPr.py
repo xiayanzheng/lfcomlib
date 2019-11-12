@@ -6,7 +6,7 @@ class Dict(dict):
     __getattr__ = dict.__getitem__
 
 
-class DaPr:
+class Core:
 
     @staticmethod
     def find_path_backward(init_path, target, max_layer=30):
@@ -34,12 +34,12 @@ class DaPr:
             list.append(tuple[0])
         return list
 
-    def find_diff_value_from_two_dicts(self, type, Origi, Modified):
-        if type in ['dict', 'Dict']:
+    def find_diff_value_from_two_dicts(self, type_i, origi, modified):
+        if type_i in ['dict', 'Dict']:
             diff = {}
-            for Key, Value in Origi.items():
+            for Key, Value in origi.items():
                 try:
-                    if Modified[Key] == Value:
+                    if modified[Key] == Value:
                         pass
                     else:
                         diff[Key] = Value
@@ -47,10 +47,11 @@ class DaPr:
                     pass
             return diff
 
-    def keep_one(self, rawdata):
+    @staticmethod
+    def keep_one(raw_data):
         keep_one = []
         package = []
-        for Data in rawdata:
+        for Data in raw_data:
             if Data not in keep_one:
                 keep_one.append(Data)
                 package.append({'value': Data, 'label': Data})
@@ -59,26 +60,27 @@ class DaPr:
         keep_one.clear()
         return package
 
-    def FindNewestFileInWindows(self, Dir, FileExtensionList):
-        FileList = []
-        for Files in os.walk(Dir):
+    @staticmethod
+    def find_newest_file_in_windows(user_dir, file_extension_list):
+        file_list = []
+        for Files in os.walk(user_dir):
             for FileName in Files[2]:
-                if FileName.split(".")[-1] in FileExtensionList:
+                if FileName.split(".")[-1] in file_extension_list:
                     FilePath = os.path.join(Files[0], FileName)
-                    FileList.append((FileName, os.path.getctime(FilePath), FilePath))
-        if len(FileList) > 1:
-            return sorted(FileList, key=lambda FileCreateTime: FileCreateTime[1])[-1][2]
+                    file_list.append((FileName, os.path.getctime(FilePath), FilePath))
+        if len(file_list) > 1:
+            return sorted(file_list, key=lambda FileCreateTime: FileCreateTime[1])[-1][2]
         else:
             return False
 
-    def replace_dir_slash(self, Dir):
-        return reduce(lambda x, y: x + y, self.insert_values_to_list(Dir.split("/"), "\\"))
+    def replace_dir_slash(self, user_dir):
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(user_dir.split("/"), "\\"))
 
-    def replace_dir_symbol(self, Dir, ReplaceFrom, ReplaceTo):
-        return reduce(lambda x, y: x + y, self.insert_values_to_list(Dir.split(ReplaceFrom), ReplaceTo))
+    def replace_dir_symbol(self, user_dir, replace_from, replace_to):
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(user_dir.split(replace_from), replace_to))
 
-    def replace_symbol(self, str, ReplaceFrom, ReplaceTo):
-        return reduce(lambda x, y: x + y, self.insert_values_to_list(str.split(ReplaceFrom), ReplaceTo))
+    def replace_symbol(self, user_str, replace_from, replace_to):
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(user_str.split(replace_from), replace_to))
 
     def clean_list(self, str_i, split_str, *args):
         raw = str_i.split(split_str)
@@ -97,12 +99,12 @@ class DaPr:
     def insert_value_to_list_and_merge(self, list, value):
         return reduce(lambda x, y: x + y, self.insert_values_to_list(list, value))
 
-    def rename_dict_keys(self, RawData, ReplaceKeyMap):
-        for Key in RawData:
-            for RDKey, RDVaule in ReplaceKeyMap.items():
+    def rename_dict_keys(self, raw_data, replace_key_map):
+        for Key in raw_data:
+            for RDKey, RDVaule in replace_key_map.items():
                 if Key == RDKey:
-                    RawData[RDVaule] = RawData.pop(Key)
-        return RawData
+                    raw_data[RDVaule] = raw_data.pop(Key)
+        return raw_data
 
     def insert_values_to_list(self, data_set, insert_value):
         union_data = []
@@ -115,29 +117,29 @@ class DaPr:
         else:
             return data_set
 
-    def insert_into_x_values_to_list(self, DataSet, Gap, InsertValue):
+    def insert_into_x_values_to_list(self, data_set, gap, insert_value):
         union_data = []
         count = 0
-        if len(DataSet) > Gap:
-            for Data in DataSet:
-                if count < Gap:
+        if len(data_set) > gap:
+            for Data in data_set:
+                if count < gap:
                     union_data.append(Data)
                     count += 1
                 else:
-                    union_data.append(InsertValue)
+                    union_data.append(insert_value)
                     count = 0
             del union_data[-1]
         else:
-            for Data in DataSet:
+            for Data in data_set:
                 union_data.append(Data)
         return union_data
 
-    def unpackage_list_and_insert_values_to_list(self, DataSet, InsertValue):
+    def unpackage_list_and_insert_values_to_list(self, data_set, insert_value):
         union_data = []
-        for List in DataSet:
+        for List in data_set:
             for Data in List:
                 union_data.append(Data)
-            union_data.append(InsertValue)
+            union_data.append(insert_value)
         del union_data[-1]
         return union_data
 

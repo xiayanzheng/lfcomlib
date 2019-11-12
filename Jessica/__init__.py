@@ -14,7 +14,7 @@ from lfcomlib.Jessica import Log as LogCore
 from lfcomlib.Jessica import Save as SaveCore
 from lfcomlib.Jessica.Infra import TelnetConn
 
-DaPr = DaPrCore.DaPr()
+DaPr = DaPrCore.Core()
 Infra = InfraCore.Infra()
 Msg = MsgCore.Msg()
 Utl = UtlCore.Utl()

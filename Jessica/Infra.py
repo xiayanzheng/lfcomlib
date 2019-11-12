@@ -1,11 +1,11 @@
-from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse, DaPr, Msg
+from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse,Msg
 from lfcomlib.Jessica import psycopg2, shutil, telnetlib
 from lfcomlib.Jessica import psycopg2_extras
 from lfcomlib.Jessica.Err import logger_i
 from lfcomlib.Jessica import uuid
+from lfcomlib.Jessica import DaPrCore
 
-DaPr = DaPr.DaPr()
-
+DaPr = DaPrCore.Core()
 
 class Infra:
 

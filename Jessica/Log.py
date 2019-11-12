@@ -6,8 +6,6 @@ from lfcomlib.Jessica import DaPr
 import functools
 from lfcomlib.Jessica import Utl
 
-DaPr = DaPr.DaPr()
-
 if platform.system() == 'Windows':
     from lfcomlib.Jessica import win32evtlog
 

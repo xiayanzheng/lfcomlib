@@ -77,7 +77,7 @@ class Exl:
             pass
         else:
             print("OpenResult")
-            Infra.open_file('start', DaPr.FindNewestFileInWindows(result_path, result_file_type), None)
+            Infra.open_file('start', DaPr.find_newest_file_in_windows(result_path, result_file_type), None)
         print("JobDone")
 
 
