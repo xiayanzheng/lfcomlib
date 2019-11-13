@@ -1,11 +1,11 @@
-from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, pymysql, codecs, parse,Msg
-from lfcomlib.Jessica import psycopg2, shutil, telnetlib
-from lfcomlib.Jessica import psycopg2_extras
+from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, codecs, parse, Msg
+from lfcomlib.Jessica import shutil, telnetlib
 from lfcomlib.Jessica.Err import logger_i
 from lfcomlib.Jessica import uuid
 from lfcomlib.Jessica import DaPrCore
 
 DaPr = DaPrCore.Core()
+
 
 class Infra:
 
@@ -71,9 +71,12 @@ class Infra:
         return folder_size
 
     def copy_ff(self, from_, to_, show_msg=True):
+        _from = from_
+        _to = to_
         if os.path.isdir(from_):
-            if not os.path.exists(to_):
-                shutil.copytree(from_, to_)
+            _to = os.path.join(to_, os.path.basename(from_))
+            if not os.path.exists(_to):
+                shutil.copytree(from_, _to)
             else:
                 print('Folder exists')
                 pass
@@ -84,9 +87,9 @@ class Infra:
             shutil.copy(from_, to_)
         if show_msg:
             print("++++++++++++++++")
-            print("From:", from_)
-            print("To:", to_)
-            print("File {} Copied".format(from_))
+            print("From:", _from)
+            print("To:", _to)
+            print("File {} Copied".format(_from))
             print("++++++++++++++++")
 
     def copy_ff_with_del(self, from_, to_, show_msg=True):
@@ -184,6 +187,7 @@ class Infra:
         return self.db_entry(**sql_commit_cfg)
 
     def db_init(self, db_type=None, **kwargs):
+        from lfcomlib.Jessica import pymysql,psycopg2
         retry_count = 0
         if db_type in ["maria", "mysql"]:
             self.db_controller = self.maria_db
@@ -245,6 +249,7 @@ class Infra:
             return uri
 
     def postgres_db(self, db_open=False, **kwargs):
+        from lfcomlib.Jessica import psycopg2,psycopg2_extras
         try:
             # 连接MySQL数据库
             if db_open is True:
@@ -291,6 +296,7 @@ class Infra:
             raise
 
     def maria_db(self, db_open=False, **kwargs):
+        from lfcomlib.Jessica import pymysql
         try:
             # 连接MySQL数据库
             if db_open is True:
