@@ -1,4 +1,4 @@
-from lfcomlib.Jessica import os, time, datetime, reduce
+from lfcomlib.Jessica import os, time, datetime, reduce, re
 
 
 class Dict(dict):
@@ -73,6 +73,17 @@ class Core:
         else:
             return False
 
+    @staticmethod
+    def match_datetime_from_str(data):
+        reg = "([0-9]{3}[1-9]|[0-9]{2}[1-9][0-9]{1}|[0-9]{1}[1-9][0-9]{2}|[1-9][0-9]{3})-(((0[13578]|1[02])-" \
+              "(0[1-9]|[12][0-9]|3[01]))|((0[469]|11)-(0[1-9]|[12][0-9]|30))|(02-(0[1-9]|[1][0-9]|2[0-8])))\s(" \
+              "[0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])"
+        result = re.search(reg, data)
+        if result is not None:
+            return result.group()
+        else:
+            return None
+
     def replace_dir_slash(self, user_dir):
         return reduce(lambda x, y: x + y, self.insert_values_to_list(user_dir.split("/"), "\\"))
 
@@ -96,8 +107,8 @@ class Core:
         path = os.path.join(*list_n)
         return path
 
-    def insert_value_to_list_and_merge(self, list, value):
-        return reduce(lambda x, y: x + y, self.insert_values_to_list(list, value))
+    def insert_value_to_list_and_merge(self, u_list, value):
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(u_list, value))
 
     def rename_dict_keys(self, raw_data, replace_key_map):
         for Key in raw_data:
