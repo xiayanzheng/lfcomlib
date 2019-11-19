@@ -56,12 +56,15 @@ class Infra:
                 print("Delete Operation Filed".format(ff))
             return False
 
-    def dir_check(self, dir):
-        if not os.path.exists(dir):
-            os.makedirs(dir)
-            return dir
+    def dir_check(self, u_dir):
+        if not os.path.exists(u_dir):
+            os.makedirs(u_dir)
+            return u_dir
         else:
-            return dir
+            return u_dir
+
+    def move_ff(self, from_, to_, show_msg=True):
+        shutil.move(from_, to_)
 
     def get_folder_size(self, folder):
         folder_size = 0
@@ -187,7 +190,7 @@ class Infra:
         return self.db_entry(**sql_commit_cfg)
 
     def db_init(self, db_type=None, **kwargs):
-        from lfcomlib.Jessica import pymysql,psycopg2
+        from lfcomlib.Jessica import pymysql, psycopg2
         retry_count = 0
         if db_type in ["maria", "mysql"]:
             self.db_controller = self.maria_db
@@ -249,7 +252,7 @@ class Infra:
             return uri
 
     def postgres_db(self, db_open=False, **kwargs):
-        from lfcomlib.Jessica import psycopg2,psycopg2_extras
+        from lfcomlib.Jessica import psycopg2, psycopg2_extras
         try:
             # 连接MySQL数据库
             if db_open is True:
