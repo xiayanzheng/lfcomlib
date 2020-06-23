@@ -1,4 +1,4 @@
-class Msg:
+class MsgCore:
 
     def __init__(self):
         self.StartGetToken = "开始获取Token"

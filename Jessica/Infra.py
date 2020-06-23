@@ -158,9 +158,9 @@ class Infra:
             response = request.json()
             # 返回响应报文
             return response
-        finally:
+        except:
             # 输出"无网络连接"消息
-            print(Msg.NoNetWorkConnection)
+            print("Failed")
             time.sleep(5)
             # 返回 Main.Flow(sel返回到方法
             return False
@@ -169,14 +169,15 @@ class Infra:
         try:
             # 构造并发送Get请求(在APIUrl后加入查询参数的字典)
             request = "%s?%s" % (data_source, parse.urlencode(parameter_dict))
+            print(request)
             # request = RawRequest.encode("utf-8")
             # print(request)
             # 定义返回报文变量名称
             response = requests.get(request)
             return response
-        finally:
+        except:
             # 输出"无网络连接"消息
-            print(Msg.NoNetWorkConnection)
+            print("Failed")
             # time.sleep(5)
             # 返回 Main.Flow(sel返回到方法
             return False

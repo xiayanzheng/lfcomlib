@@ -6,7 +6,7 @@ from xlutils.copy import copy as xluCopy
 from functools import reduce
 from xlwt import Style
 from lfcomlib.Jessica import DaPr as DaPrCore
-from lfcomlib.Jessica import Msg as MsgCore
+from lfcomlib.Jessica import Msg
 from lfcomlib.Jessica import Infra as InfraCore
 from lfcomlib.Jessica import Utl as UtlCore
 from lfcomlib.Jessica import Err as ErrCore
@@ -16,6 +16,6 @@ from lfcomlib.Jessica.Infra import TelnetConn
 
 DaPr = DaPrCore.Core()
 Infra = InfraCore.Infra()
-Msg = MsgCore.Msg()
+Msg = Msg.MsgCore()
 Utl = UtlCore.Utl()
 Save = SaveCore.Data()
