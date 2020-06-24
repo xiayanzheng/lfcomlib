@@ -1,4 +1,4 @@
-class Numbers:
+class Core:
 
     def gen_range(self, StartNumber, EndNumber, GapNumber):
         number_range_result = []

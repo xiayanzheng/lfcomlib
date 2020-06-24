@@ -2,7 +2,7 @@ from lfcomlib.Jessica import random, copy
 import time, threading
 
 
-class Utl:
+class Core:
 
     def color_picker(self, is_random, index, color_set):
         if is_random:

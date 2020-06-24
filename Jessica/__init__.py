@@ -7,15 +7,15 @@ from functools import reduce
 from xlwt import Style
 from lfcomlib.Jessica import DaPr as DaPrCore
 from lfcomlib.Jessica import Msg
-from lfcomlib.Jessica import Infra as InfraCore
-from lfcomlib.Jessica import Utl as UtlCore
-from lfcomlib.Jessica import Err as ErrCore
-from lfcomlib.Jessica import Log as LogCore
-from lfcomlib.Jessica import Save as SaveCore
+from lfcomlib.Jessica import Infra as Infra
+from lfcomlib.Jessica import Utl as Utl
+from lfcomlib.Jessica import Err as Err
+from lfcomlib.Jessica import Log as Log
+from lfcomlib.Jessica import Save as Save
 from lfcomlib.Jessica.Infra import TelnetConn
 
 DaPr = DaPrCore.Core()
-Infra = InfraCore.Infra()
-Msg = Msg.MsgCore()
-Utl = UtlCore.Utl()
-Save = SaveCore.Data()
+Infra = Infra.Core()
+Msg = Msg.Core()
+Utl = Utl.Core()
+Save = Save.Core()

@@ -1,4 +1,4 @@
-from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, codecs, parse, Msg
+from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, codecs, parse
 from lfcomlib.Jessica import shutil, telnetlib
 from lfcomlib.Jessica.Err import logger_i
 from lfcomlib.Jessica import uuid
@@ -7,7 +7,7 @@ from lfcomlib.Jessica import DaPrCore
 DaPr = DaPrCore.Core()
 
 
-class Infra:
+class Core:
 
     def __init__(self):
         self.db_opr_type = {
@@ -112,6 +112,22 @@ class Infra:
         else:
             param_x = param
         os.system("{} {} {}".format(program, DaPr.replace_dir_slash(selected_dir), param_x))
+
+    def open_file_conn(self, filepath, filename, open_mode='w', show_msg=False):
+        if os.path.exists(filepath):
+            if show_msg:
+                message = 'Dir "{}" exists.'.format(filepath)
+                print(message)
+        else:
+            if show_msg:
+                message = "Now, I will create the {}".format(filepath)
+                print(message)
+            os.makedirs(filepath)
+        file_conn = open(filepath + filename, open_mode)
+        return file_conn
+
+    def close_file_conn(self, file_conn):
+        file_conn.close()
 
     def start_exe(self, path, program):
         os.system("start {}".format(os.path.join(path, program)))
@@ -451,6 +467,11 @@ class Infra:
         for Key in dict_data:
             dict_data[Key] = dict(dict_data[Key])
         return dict_data
+
+    def read_file(self, file_path):
+        file = open(file_path, 'r')
+        data = file.read()
+        return data
 
     def ado_db_con(self, mode, host, db, user, password, proxy, proxy_port, sql, output_type):
         conn_parm = {'host': r"%s" % host,

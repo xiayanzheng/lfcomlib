@@ -110,6 +110,9 @@ class Core:
     def insert_value_to_list_and_merge(self, u_list, value):
         return reduce(lambda x, y: x + y, self.insert_values_to_list(u_list, value))
 
+    def list_to_string(self, u_list):
+        return reduce(lambda x, y: x + y, u_list)
+
     def rename_dict_keys(self, raw_data, replace_key_map):
         for Key in raw_data:
             for RDKey, RDVaule in replace_key_map.items():
@@ -284,3 +287,6 @@ class Core:
         for k, v in dict_obj.items():
             inst[k] = self.dict_to_object(v)
         return inst
+
+    def convert_multiline_to_single_line(self, data, *args):
+        return self.list_to_string(self.clean_list(data, "\n", *args))

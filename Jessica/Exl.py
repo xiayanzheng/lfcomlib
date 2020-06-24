@@ -1,7 +1,7 @@
 from lfcomlib.Jessica import Infra, DaPr
 
 
-class Exl:
+class Core:
 
     def __init__(self):
         self.excel_file = None

@@ -1,7 +1,7 @@
 from lfcomlib.Jessica import os, csv, xlrd, copy, Style, Msg, ErrMsg
 
 
-class Data:
+class Core:
 
     def toCSV(self, file_path, file_name, headers, data, show_status=False):
         file_path = os.path.join(file_path, file_name)
