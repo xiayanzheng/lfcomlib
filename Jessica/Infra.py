@@ -2,10 +2,9 @@ from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configpars
 from lfcomlib.Jessica import shutil, telnetlib
 from lfcomlib.Jessica.Err import logger_i
 from lfcomlib.Jessica import uuid
-from lfcomlib.Jessica import DaPrCore
+from lfcomlib.Jessica import DaPr
 
-DaPr = DaPrCore.Core()
-
+DaPr = DaPr.Core()
 
 class Core:
 
@@ -536,6 +535,27 @@ class Core:
         # Writing JSON data
         with open(file, 'w') as f:
             json.dump(data, f)
+
+    def create_folder(self,path):
+        os.makedirs(path)
+
+    def handle_folder_file_path(self, *args,if_folder_not_exits_create=True):
+        if len(args) > 1:
+            folder_path, file_name = args[0], args[1]
+            if not os.path.exists(folder_path) and if_folder_not_exits_create:
+                self.create_folder(folder_path)
+            file_path = os.path.join(folder_path, file_name)
+        else:
+            file_path = args[0]
+        return file_path
+
+    def read_yaml(self,*args):
+        import yaml
+        print(args)
+        file = open(self.handle_folder_file_path(*args), 'r', encoding="utf-8")
+        file = file.read()
+        data = yaml.load(file)
+        return data
 
 
 class TelnetConn:

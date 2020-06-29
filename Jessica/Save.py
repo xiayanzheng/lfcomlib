@@ -3,8 +3,12 @@ from lfcomlib.Jessica import os, csv, xlrd, copy, Style, Msg, ErrMsg
 
 class Core:
 
-    def toCSV(self, file_path, file_name, headers, data, show_status=False):
-        file_path = os.path.join(file_path, file_name)
+    def toCSV(self, headers, data,*args,show_status=False):
+        if len(args) > 1:
+            file_path, file_name = args[0], args[1]
+            file_path = os.path.join(file_path, file_name)
+        else:
+            file_path = args[0]
         if show_status:
             print("S")
         with open(file_path, 'w', newline='') as CSV:

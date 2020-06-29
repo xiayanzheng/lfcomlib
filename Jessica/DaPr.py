@@ -1,12 +1,13 @@
 from lfcomlib.Jessica import os, time, datetime, reduce, re
 
-
 class Dict(dict):
     __setattr__ = dict.__setitem__
     __getattr__ = dict.__getitem__
 
 
-class Core:
+class Core(object):
+
+
 
     @staticmethod
     def find_path_backward(init_path, target, max_layer=30):
@@ -108,6 +109,8 @@ class Core:
         return path
 
     def insert_value_to_list_and_merge(self, u_list, value):
+        if type(u_list) is not list:
+            return u_list
         return reduce(lambda x, y: x + y, self.insert_values_to_list(u_list, value))
 
     def list_to_string(self, u_list):
