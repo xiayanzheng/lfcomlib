@@ -115,7 +115,11 @@ class Core(object):
     def insert_value_to_list_and_merge(self, u_list, value):
         if type(u_list) is not list:
             return u_list
-        return reduce(lambda x, y: x + y, self.insert_values_to_list(u_list, value))
+        tmp = self.insert_values_to_list(u_list, value)
+        if len(tmp) > 0:
+            return reduce(lambda x, y: x + y, tmp)
+        else:
+            return ""
 
     def list_to_string(self, u_list):
         return reduce(lambda x, y: x + y, u_list)
@@ -133,7 +137,10 @@ class Core(object):
             for Data in data_set:
                 union_data.append(Data)
                 union_data.append(insert_value)
-            del union_data[-1]
+            if len(union_data) > 0:
+                del union_data[-1]
+            else:
+                pass
             return union_data
         else:
             return data_set
