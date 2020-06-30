@@ -1,4 +1,5 @@
-from lfcomlib.Jessica import Infra, DaPr
+from lfcomlib.Jessica import Infra
+from lfcomlib.Jessica import DaPr
 
 
 class Core:

@@ -1,4 +1,6 @@
-from lfcomlib.Jessica import os, time, datetime, reduce, re
+import os, time, datetime, re
+from functools import reduce
+
 
 class Dict(dict):
     __setattr__ = dict.__setitem__
@@ -7,7 +9,9 @@ class Dict(dict):
 
 class Core(object):
 
-
+    def del_invalid_str(self, regx, o_str):
+        result = re.sub(regx, '', o_str)
+        return result
 
     @staticmethod
     def find_path_backward(init_path, target, max_layer=30):

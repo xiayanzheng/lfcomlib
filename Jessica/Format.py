@@ -1,4 +1,4 @@
-from lfcomlib.Jessica import time
+import time
 
 class CurrentTime:
     YYYYMMDDHHMMSS = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())

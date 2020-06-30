@@ -1,5 +1,8 @@
-from lfcomlib.Jessica import os, csv, xlrd, copy, Style, Msg, ErrMsg
+import os, csv, xlrd, copy
+from xlwt import Style
+from lfcomlib.Jessica import Msg
 
+Msg = Msg.Core()
 
 class Core:
 

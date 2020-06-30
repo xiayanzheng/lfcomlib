@@ -1,7 +1,9 @@
-from lfcomlib.Jessica import requests, os, time, sqlite3, subprocess, configparser, codecs, parse
-from lfcomlib.Jessica import shutil, telnetlib
+import os
+import time
+import shutil
+import uuid
+import urllib.parse as parse
 from lfcomlib.Jessica.Err import logger_i
-from lfcomlib.Jessica import uuid
 from lfcomlib.Jessica import DaPr
 
 DaPr = DaPr.Core()
@@ -122,7 +124,7 @@ class Core:
                 message = "Now, I will create the {}".format(filepath)
                 print(message)
             os.makedirs(filepath)
-        file_conn = open(filepath + filename, open_mode)
+        file_conn = open(os.path.join(filepath, filename), open_mode)
         return file_conn
 
     def close_file_conn(self, file_conn):
@@ -166,6 +168,7 @@ class Core:
             return response
 
     def post(self, data_source, parameter):
+        import requests
         try:
             # 构造并发送Post请求
             request = requests.post(data_source, parameter)
@@ -181,6 +184,7 @@ class Core:
             return False
 
     def get(self, data_source, parameter_dict):
+        import requests
         try:
             # 构造并发送Get请求(在APIUrl后加入查询参数的字典)
             request = "%s?%s" % (data_source, parse.urlencode(parameter_dict))
@@ -364,7 +368,7 @@ class Core:
             raise
 
     def sqlite3(self, sql, data, output_type, number_of_row, database):
-
+        import sqlite3
         try:
             db = sqlite3.connect(database)
             if output_type != 'Dict':
@@ -417,6 +421,7 @@ class Core:
             db.commit()
 
     def execute_bat(self, bat_file_path, bat_file):
+        import subprocess
         bat_file_path = os.path.join(bat_file_path, bat_file)
         exe_bat = subprocess.Popen("cmd.exe /c" + "%s abc" % bat_file_path, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -429,6 +434,7 @@ class Core:
         exe_bat.terminate()
 
     def wcmd(self, command):
+        import subprocess
         excuet_bat = subprocess.Popen("cmd.exe /c" + "%s abc" % command, stdout=subprocess.PIPE,
                                       stderr=subprocess.STDOUT)
         cur_line = excuet_bat.stdout.readline()
@@ -451,6 +457,7 @@ class Core:
         return output
 
     def read_ini(self, config_file, section, key):
+        import codecs,configparser
         read_config = configparser.ConfigParser()
         read_config.read_file(codecs.open(config_file, "r", "utf-8-sig"))
         # ReadConfig.sections()
@@ -460,6 +467,7 @@ class Core:
         return value
 
     def read_ini_as_dict(self, config_file):
+        import codecs,configparser
         read_config = configparser.ConfigParser()
         read_config.read_file(codecs.open(config_file, "r", "utf-8-sig"))
         dict_data = dict(read_config._sections)
@@ -551,7 +559,6 @@ class Core:
 
     def read_yaml(self,*args):
         import yaml
-        print(args)
         file = open(self.handle_folder_file_path(*args), 'r', encoding="utf-8")
         file = file.read()
         data = yaml.load(file)
@@ -566,6 +573,7 @@ class TelnetConn:
         self.debug = False
 
     def create_telnet_session(self, host, port=23):
+        import telnetlib
         self.tn = telnetlib.Telnet(host, port)
 
     def telnet_interface(self, show_response=False, **kwargs):

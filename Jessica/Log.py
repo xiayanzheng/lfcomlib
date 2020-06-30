@@ -4,7 +4,6 @@ from logging.handlers import RotatingFileHandler
 import platform
 from lfcomlib.Jessica import DaPr
 import functools
-from lfcomlib.Jessica import Utl
 
 if platform.system() == 'Windows':
     from lfcomlib.Jessica import win32evtlog

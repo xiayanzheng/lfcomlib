@@ -1,5 +1,5 @@
-from lfcomlib.Jessica import random, copy
-import time, threading
+import random, copy
+import threading
 
 
 class Core:

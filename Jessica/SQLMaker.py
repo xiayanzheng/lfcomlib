@@ -1,4 +1,5 @@
-from lfcomlib.Jessica import reduce, DaPr
+from functools import reduce
+from lfcomlib.Jessica import DaPr
 
 
 class ForMSSQL:
