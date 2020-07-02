@@ -302,5 +302,5 @@ class Core(object):
             inst[k] = self.dict_to_object(v)
         return inst
 
-    def convert_multiline_to_single_line(self, data, *args):
-        return self.list_to_string(self.clean_list(data, "\n", *args))
+    def convert_multiline_to_single_line(self, data, connect_str,*args):
+        return self.insert_value_to_list_and_merge(self.clean_list(data, "\n", *args), connect_str)
