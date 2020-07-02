@@ -561,7 +561,7 @@ class Core:
         import yaml
         file = open(self.handle_folder_file_path(*args), 'r', encoding="utf-8")
         file = file.read()
-        data = yaml.load(file)
+        data = yaml.safe_load(file)
         return data
 
 
