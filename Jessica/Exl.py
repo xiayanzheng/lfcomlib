@@ -1,5 +1,5 @@
-from lfcomlib.Jessica import Infra
 from lfcomlib.Jessica import DaPr
+from lfcomlib.Jessica import Infra
 
 
 class Core:
@@ -27,7 +27,7 @@ class Core:
                 bucket.append(data)
         return bucket
 
-    def open_excel(self,excel_file_path):
+    def open_excel(self, excel_file_path):
         self.excel_file = ExlCom(filename=excel_file_path, is_readonly=False, is_visible=False)
 
     def close_excel(self):
@@ -36,7 +36,7 @@ class Core:
     def get_col_data_by_header_with_com(self, sheet_name, head, it_range, do_not_show_none):
 
         data_source = self.excel_file.get_range(sheet=sheet_name, col1=it_range[0], row1=it_range[1],
-                                         col2=it_range[2], row2=it_range[3])
+                                                col2=it_range[2], row2=it_range[3])
         # print(data_source)
         header_num = None
         data_set = []
@@ -96,13 +96,14 @@ class ExlCom:
         self.xlApp.Visible = is_visible
         if filename:
             self.filename = filename
-            self.xlBook = self.xlApp.Workbooks.Open(filename, ReadOnly=is_readonly, Format=exl_format, Password=password,
+            self.xlBook = self.xlApp.Workbooks.Open(filename, ReadOnly=is_readonly, Format=exl_format,
+                                                    Password=password,
                                                     WriteResPassword=write_res_password)
         else:
             self.xlBook = self.xlApp.Workbooks.Add()
             self.filename = ''
 
-    def run_vba(self, vba_function_name,show_status=False):
+    def run_vba(self, vba_function_name, show_status=False):
         str_para = self.xlBook.Name + vba_function_name
         status = self.xlApp.ExecuteExcel4Macro(str_para)
         if show_status:

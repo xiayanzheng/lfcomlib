@@ -1,4 +1,5 @@
-import random, copy
+import copy
+import random
 import threading
 
 
