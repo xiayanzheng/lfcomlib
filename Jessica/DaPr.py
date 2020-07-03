@@ -1,4 +1,7 @@
-import os, time, datetime, re
+import datetime
+import os
+import re
+import time
 from functools import reduce
 
 
@@ -256,7 +259,8 @@ class Core(object):
         try:
             del my_dict[my_key]
             return True
-        finally:
+        except Exception as e:
+            print(e)
             return False
 
     def timestamp_to_datetime_as_dict(self, timestamp):
@@ -302,5 +306,5 @@ class Core(object):
             inst[k] = self.dict_to_object(v)
         return inst
 
-    def convert_multiline_to_single_line(self, data, connect_str,*args):
+    def convert_multiline_to_single_line(self, data, connect_str, *args):
         return self.insert_value_to_list_and_merge(self.clean_list(data, "\n", *args), connect_str)

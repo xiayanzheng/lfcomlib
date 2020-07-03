@@ -1,12 +1,19 @@
-import os, csv, xlrd, copy
+import copy
+import csv
+import os
+import xlrd
+
 from xlwt import Style
 from lfcomlib.Jessica import Msg
+from lfcomlib.Jessica import ErrMsg
 
 Msg = Msg.Core()
 
+
 class Core:
 
-    def toCSV(self, headers, data,*args,show_status=False):
+    @staticmethod
+    def to_csv(headers, data, *args, show_status=False):
         if len(args) > 1:
             file_path, file_name = args[0], args[1]
             file_path = os.path.join(file_path, file_name)
@@ -28,47 +35,53 @@ class Core:
         if show_status:
             print(Msg.WriteDataSuccess)
         CSV.close()
+        return True
 
-    def toCSVSR(self, CSV, Headers, Data):
+    @staticmethod
+    def to_csv_single_row(csv_, headers_, data_):
         # 定义Writer对象(由CSV.DictWriter(以字典模式写入)模块组成并定义列名称)
-        Writer = csv.DictWriter(CSV, fieldnames=Headers)
+        writer = csv_.DictWriter(csv_, fieldnames=headers_)
         # 写入列名称(字典的键)
-        Writer.writeheader()
+        writer.writeheader()
         # 写入元素(字典的值)
-        Writer.writerow(Data)
+        writer.writerow(data_)
         # print(Msg.WriteDataSuccess)
-        CSV.close()
+        csv_.close()
 
-    def toTXT(self, FilePath, FileName, Data):
+    @staticmethod
+    def to_txt(file_path, file_name, data):
         # 定义文件路径
-        LogPath = os.path.join(FilePath, FileName)
+        log_path = os.path.join(file_path, file_name)
         # 打开文件
-        with open(LogPath, 'w', encoding='utf-8') as Log:
+        with open(log_path, 'w', encoding='utf-8') as Log:
             # 写入数据
-            Log.write(Data)
+            Log.write(data)
             # 输出"写入数据成功数据"
             # 打开数据存储文件夹
-        return LogPath
+        return log_path
 
-    def toXls(self, File, Row, Col, Str, Style=Style.default_style):
+    @staticmethod
+    def to_xls(self, file, row, col, str_, style_=Style.default_style):
         # 合并单元格:
         # ws.write_merge(top_row, bottom_row, left_column, right_column, string)
-        rb = xlrd.open_workbook(File, formatting_info=True)
+        rb = xlrd.open_workbook(file, formatting_info=True)
         wb = copy(rb)
         ws = wb.get_sheet(0)
-        ws.write(Row, Col, Str, Style)
-        wb.save(File)
+        ws.write(row, col, str_, style_)
+        wb.save(file)
 
-    def ModifyExcel(self, FilePath, Filename, RowColSet, Data):
-        book = xlrd.open_workbook(Filename)  # 打开excel
+    @staticmethod
+    def modify_excel(self, file_path, file_name, row_col_set, data):
+        book = xlrd.open_workbook(file_name)  # 打开excel
         new_book = copy(book)  # 复制excel
         sheet = new_book.get_sheet(0)  # 获取第一个表格的数据
-        for RowCol in RowColSet:
-            sheet.write(RowCol[0], RowCol[1], Data)  # 修改0行1列的数据为'Haha'
-        TempFile = os.path.join(FilePath, 'Temp.xls')
-        new_book.save(TempFile)  # 保存新的excel
+        for RowCol in row_col_set:
+            sheet.write(RowCol[0], RowCol[1], data)  # 修改0行1列的数据为'Haha'
+        temp_file = os.path.join(file_path, 'Temp.xls')
+        new_book.save(temp_file)  # 保存新的excel
         try:
-            os.remove(Filename)  # 删除旧的excel
-            os.rename(TempFile, Filename)  # 将新excel重命名
-        except:
+            os.remove(file_name)  # 删除旧的excel
+            os.rename(temp_file, file_name)  # 将新excel重命名
+        except Exception as e:
+            print(e)
             print(ErrMsg.UnableAccessThisFile)

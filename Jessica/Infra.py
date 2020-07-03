@@ -1,12 +1,14 @@
 import os
-import time
 import shutil
-import uuid
+import time
 import urllib.parse as parse
-from lfcomlib.Jessica.Err import logger_i
+import uuid
+
 from lfcomlib.Jessica import DaPr
+from lfcomlib.Jessica.Err import logger_i
 
 DaPr = DaPr.Core()
+
 
 class Core:
 
@@ -457,7 +459,7 @@ class Core:
         return output
 
     def read_ini(self, config_file, section, key):
-        import codecs,configparser
+        import codecs, configparser
         read_config = configparser.ConfigParser()
         read_config.read_file(codecs.open(config_file, "r", "utf-8-sig"))
         # ReadConfig.sections()
@@ -467,7 +469,7 @@ class Core:
         return value
 
     def read_ini_as_dict(self, config_file):
-        import codecs,configparser
+        import codecs, configparser
         read_config = configparser.ConfigParser()
         read_config.read_file(codecs.open(config_file, "r", "utf-8-sig"))
         dict_data = dict(read_config._sections)
@@ -544,10 +546,10 @@ class Core:
         with open(file, 'w') as f:
             json.dump(data, f)
 
-    def create_folder(self,path):
+    def create_folder(self, path):
         os.makedirs(path)
 
-    def handle_folder_file_path(self, *args,if_folder_not_exits_create=True):
+    def handle_folder_file_path(self, *args, if_folder_not_exits_create=True):
         if len(args) > 1:
             folder_path, file_name = args[0], args[1]
             if not os.path.exists(folder_path) and if_folder_not_exits_create:
@@ -557,11 +559,11 @@ class Core:
             file_path = args[0]
         return file_path
 
-    def read_yaml(self,*args):
+    def read_yaml(self, *args):
         import yaml
         file = open(self.handle_folder_file_path(*args), 'r', encoding="utf-8")
         file = file.read()
-        data = yaml.load(file)
+        data = yaml.safe_load(file)
         return data
 
 

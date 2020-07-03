@@ -1,4 +1,5 @@
 from functools import reduce
+
 from lfcomlib.Jessica import DaPr
 
 
@@ -47,13 +48,13 @@ class ForMSSQL:
                 pass
         SQLTemplats = {
             'SelectRaw': "SELECT %s FROM [%s].[%s].[%s] " % (
-            Config['SelectType'], Config['Database'], Config['DBO'], Config['TableName']),
+                Config['SelectType'], Config['Database'], Config['DBO'], Config['TableName']),
             'Select': "SELECT %s %s FROM [%s].[%s].[%s] WHERE %s IS NOT NULL " % (
-            Config['SelectType'], Unziped['Cols'], Config['Database'], Config['DBO'], Config['TableName'],
-            Unziped['WhereIsNotNull']),
+                Config['SelectType'], Unziped['Cols'], Config['Database'], Config['DBO'], Config['TableName'],
+                Unziped['WhereIsNotNull']),
             'Insert': "INSERT INTO [%s].[%s].[%s](%s) VALUES(%s)" % (
-            Config['Database'], Config['DBO'], Config['TableName'], Unziped['Cols'], Unziped['Values']),
+                Config['Database'], Config['DBO'], Config['TableName'], Unziped['Cols'], Unziped['Values']),
             'Update': "UPDATE [%s].[%s].[%s] SET %s WHERE %s" % (
-            Config['Database'], Config['DBO'], Config['TableName'], Unziped['Values'], Unziped['WhereValues'])
+                Config['Database'], Config['DBO'], Config['TableName'], Unziped['Values'], Unziped['WhereValues'])
         }
         return SQLTemplats[OprType]
