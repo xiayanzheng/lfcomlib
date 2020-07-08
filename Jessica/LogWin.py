@@ -152,7 +152,7 @@ class GetWindowsEventLogByWmiQuery:
             if type(dates[i]) is str:
                 for mark in marks:
                     if mark in data:
-                        dates[i] = functools.reduce(lambda x, y: x + y, dates[i].split(mark))
+                        dates[i] = functools.reduce(lambda x, y: x + y, dates[i].user_input_split(mark))
 
         wql_date_format = "'{}000000.000000-360'"
         times = [

@@ -93,16 +93,16 @@ class Core(object):
             return None
 
     def replace_dir_slash(self, user_dir):
-        return reduce(lambda x, y: x + y, self.insert_values_to_list(user_dir.split("/"), "\\"))
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(user_dir.user_input_split("/"), "\\"))
 
     def replace_dir_symbol(self, user_dir, replace_from, replace_to):
-        return reduce(lambda x, y: x + y, self.insert_values_to_list(user_dir.split(replace_from), replace_to))
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(user_dir.user_input_split(replace_from), replace_to))
 
     def replace_symbol(self, user_str, replace_from, replace_to):
-        return reduce(lambda x, y: x + y, self.insert_values_to_list(user_str.split(replace_from), replace_to))
+        return reduce(lambda x, y: x + y, self.insert_values_to_list(user_str.user_input_split(replace_from), replace_to))
 
     def clean_list(self, str_i, split_str, *args):
-        raw = str_i.split(split_str)
+        raw = str_i.user_input_split(split_str)
         new = []
         for x in raw:
             if x not in args:
