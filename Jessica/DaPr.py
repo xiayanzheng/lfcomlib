@@ -4,6 +4,8 @@ import re
 import time
 from functools import reduce
 
+import prettytable
+
 
 class Dict(dict):
     __setattr__ = dict.__setitem__
@@ -11,6 +13,18 @@ class Dict(dict):
 
 
 class Core(object):
+
+    @staticmethod
+    def show_selection_table(selection_list, table_head, question_text):
+        pt = prettytable.PrettyTable()
+        pt.field_names = table_head
+        for i in range(len(selection_list)):
+            no = i
+            tool = selection_list[i]
+            pt.add_row([no, tool])
+        print(pt)
+        selected = input(question_text)
+        return selection_list[int(selected)]
 
     @staticmethod
     def del_invalid_str(regx, o_str):
