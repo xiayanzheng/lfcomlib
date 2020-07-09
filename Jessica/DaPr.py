@@ -19,9 +19,10 @@ class Core(object):
         pt = prettytable.PrettyTable()
         pt.field_names = table_head
         for i in range(len(selection_list)):
-            no = i
-            tool = selection_list[i]
-            pt.add_row([no, tool])
+            row_id = i
+            row = selection_list[i]
+            row.insert(0, row_id)
+            pt.add_row(row)
         print(pt)
         selected = input(question_text)
         return selection_list[int(selected)]
