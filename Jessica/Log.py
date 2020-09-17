@@ -117,10 +117,12 @@ def simple_err_log(msg=None):
             try:
                 return func_obj
             except Exception as e:
+                print("SSS")
                 if msg is None:
                     print("[!]Err at {}, Err-Msg:{}".format(func.__name__, e))
                 else:
                     print("[!]{}, Err-Msg:{}".format(msg, e))
+                pass
 
         return wrapper
 
