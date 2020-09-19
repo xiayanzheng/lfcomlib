@@ -212,12 +212,13 @@ class Core:
         return self.db_entry(**sql_commit_cfg)
 
     def db_init(self, db_type=None, **kwargs):
-        from lfcomlib.Jessica import pymysql, psycopg2
         retry_count = 0
         if db_type in ["maria", "mysql"]:
+            import pymysql
             self.db_controller = self.maria_db
             self.db_connect_error = (pymysql.OperationalError, pymysql.InterfaceError)
         elif db_type == "postgres":
+            import psycopg2
             self.db_controller = self.postgres_db
             self.db_connect_error = (psycopg2.OperationalError, psycopg2.InterfaceError)
         else:
@@ -321,7 +322,7 @@ class Core:
             raise
 
     def maria_db(self, db_open=False, **kwargs):
-        from lfcomlib.Jessica import pymysql
+        import pymysql
         try:
             # 连接MySQL数据库
             if db_open is True:
