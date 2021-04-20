@@ -36,7 +36,7 @@ passlib==1.7.1
 pefile==2018.8.8
 pluggy==0.11.0
 psycopg2==2.8.3
-py==1.8.0
+py==1.10.0
 PyAudio==0.2.11
 pycparser==2.19
 PyInstaller==3.4
